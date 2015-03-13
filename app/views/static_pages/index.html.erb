@@ -1,3 +1,29 @@
+<% provide(:title, "ICS 624 Tourism Routes") %>
+
+<% poi_coordinates = [] %>
+<% poi_names = [] %>
+<% route_names = [] %>
+<% routes = [] %>
+
+<% Point.all.each do |p| %>
+  <% unless p.latitude.nil? || p.longitude.nil? || p.name.nil? %>
+    <% poi_coordinates.push p.gmaps_address %>
+    <% poi_names.push p.name %>
+  <% end %>
+<% end %>
+
+<% Route.all.each do |r| %>
+  <% unless r.name.nil? || r.points_on_route.nil? %>
+    <% route_names.push r.name %>
+    <% routes.push r.to_array %>
+  <% end %>
+<% end %>
+
+<%= javascript_tag do %>
+  initializeData(<%= raw poi_coordinates.to_json %>, <%= raw poi_names.to_json %>,
+                 <%= raw route_names.to_json %>, <%= raw routes.to_json %>);
+<% end %>
+
 <div id="map" class="jumbotron">
   
 </div>
