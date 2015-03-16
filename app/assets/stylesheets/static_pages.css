@@ -7,3 +7,9 @@ footer
 {
   height: 512px;
 }
+
+#search-fields
+{
+  margin-bottom: 64px;
+  text-align: center;
+}

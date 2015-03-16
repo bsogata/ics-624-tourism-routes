@@ -11,7 +11,19 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150313195323) do
+ActiveRecord::Schema.define(version: 20150316204611) do
+
+  create_table "locales", force: true do |t|
+    t.datetime "created_at"
+    t.datetime "updated_at"
+    t.text     "name"
+    t.integer  "route_1_id"
+    t.integer  "route_2_id"
+    t.integer  "route_3_id"
+    t.integer  "route_4_id"
+    t.integer  "route_5_id"
+    t.integer  "route_6_id"
+  end
 
   create_table "points", force: true do |t|
     t.datetime "created_at"

@@ -4,26 +4,41 @@
 <% poi_names = [] %>
 <% route_names = [] %>
 <% routes = [] %>
+<% locales = [] %>
 
 <% Point.all.each do |p| %>
   <% unless p.latitude.nil? || p.longitude.nil? || p.name.nil? %>
-    <% poi_coordinates.push p.gmaps_address %>
-    <% poi_names.push p.name %>
+    <% poi_coordinates[p.id] = p.gmaps_address %>
+    <% poi_names[p.id] = p.name %>
   <% end %>
 <% end %>
 
 <% Route.all.each do |r| %>
   <% unless r.name.nil? || r.points_on_route.nil? %>
-    <% route_names.push r.name %>
-    <% routes.push r.to_array %>
+    <% route_names[r.id] = r.name %>
+    <% routes[r.id] = r.to_array %>
+  <% end %>
+<% end %>
+
+<% Locale.all.each do |l| %>
+  <% unless l.name.nil? %>
+    <% locales[l.id] = l.name.downcase %>
   <% end %>
 <% end %>
 
 <%= javascript_tag do %>
   initializeData(<%= raw poi_coordinates.to_json %>, <%= raw poi_names.to_json %>,
-                 <%= raw route_names.to_json %>, <%= raw routes.to_json %>);
+                 <%= raw route_names.to_json %>, <%= raw routes.to_json %>,
+                 <%= raw locales.to_json %>);
 <% end %>
 
 <div id="map" class="jumbotron">
   
+</div>
+<form id="search-fields" class="center-block form-inline">
+  <div class="form-group">
+    <label for="locale" class="label label-default">Search Criteria:</label>
+    <input id="locale" name="locale" class="form-control" type="text">
+    <button type="button" id="search-button">Search</button>
+  </div>
 </div>
