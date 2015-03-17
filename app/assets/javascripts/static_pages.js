@@ -141,6 +141,54 @@ function getStrokeColor(routeNumber)
   return color;
 }
 
+/**
+ * Returns the name of the marker icon to use given the route number.
+ *
+ * Parameter:
+ *   routeNumber    The integer equal to the number of the route to get a marker for.
+ *
+ * Return:
+ *   A string containing the name of the image file to retrieve.
+ *
+ */
+
+function getIconName(routeNumber)
+{
+  var icon = "/assets/marker";
+  
+  switch (routeNumber)
+  {
+    // Red
+    case 0:
+      icon += "_red";
+      break;
+    // Orange
+    case 1:
+      icon += "_orange";
+      break;
+    // Yellow
+    case 2:
+      icon += "_yellow";
+      break;
+    // Green
+    case 3:
+      icon += "_green";
+      break;
+    // Blue
+    case 4:
+      icon += "_blue";
+      break;
+    // Violet
+    case 5:
+      icon += "_violet";
+      break;
+  }
+  
+  icon += ".png";
+  
+  return icon;
+}
+
 $(document).ready(function()
 {  
   // Load the map
@@ -160,8 +208,7 @@ $(document).ready(function()
     {
       var marker = new google.maps.Marker({
                                             position: new google.maps.LatLng(latitude, longitude),
-                                            title: name,
-                                            icon: "/assets/marker.png"
+                                            title: name
                                           });
       
       // When clicked on, center the map on the marker
@@ -195,9 +242,9 @@ $(document).ready(function()
     var route = new google.maps.Polyline({
                                            path: pointsOnRoute,
                                            geodesic: true,
-                                           strokeColor: "#FF0000",
+                                           strokeColor: "#000000",
                                            strokeOpacity: 1.0,
-                                           strokeWeight: 2
+                                           strokeWeight: 4
                                          });
     
     routes[j] = route;
@@ -242,7 +289,12 @@ $(document).ready(function()
            // Show markers on the map with the correct color         
           for (var m = 0; m < routePoints[routesInLocale[k]].length; m++)
           {
-            markers[routePoints[routesInLocale[k]][m]].setMap(map);
+            // Only if the icon is not already visible
+            if (markers[routePoints[routesInLocale[k]][m]].getMap() != map)
+            {
+              markers[routePoints[routesInLocale[k]][m]].setIcon(getIconName(k));
+              markers[routePoints[routesInLocale[k]][m]].setMap(map);
+            }
           }
         }
       }
