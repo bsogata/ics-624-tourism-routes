@@ -161,7 +161,7 @@ $(document).ready(function()
       var marker = new google.maps.Marker({
                                             position: new google.maps.LatLng(latitude, longitude),
                                             title: name,
-                                            icon: "assets/marker.png"
+                                            icon: "/assets/marker.png"
                                           });
       
       // When clicked on, center the map on the marker
