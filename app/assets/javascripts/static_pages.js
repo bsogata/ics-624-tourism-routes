@@ -228,38 +228,38 @@ function showInfoBox(marker)
         infoBoxes[j].hide();
       }
     }
+
+    // Default colors
+    var color = "#FFFFFF";
+    var fontColor = "#000000";
+    
+    switch (marker.getIcon())
+    {
+      case "/assets/marker_red.png":
+        color = getStrokeColor(0);
+        break;
+      case "/assets/marker_orange.png":
+        color = getStrokeColor(1);
+        break;
+      case "/assets/marker_yellow.png":
+        color = getStrokeColor(2);
+        break;
+      case "/assets/marker_green.png":
+        color = getStrokeColor(3);
+        break;
+      case "/assets/marker_blue.png":
+        color = getStrokeColor(4);
+        break;
+      case "/assets/marker_violet.png":
+        color = getStrokeColor(5);
+        break;
+      default:
+        break;
+    }
     
     // If an InfoBox for this point does not exist, create and open a new InfoBox
     if (infoBoxes[markerId] === undefined)
-    {
-      // Default colors
-      var color = "#FFFFFF";
-      var fontColor = "#000000";
-      
-      switch (marker.getIcon())
-      {
-        case "/assets/marker_red.png":
-          color = getStrokeColor(0);
-          break;
-        case "/assets/marker_orange.png":
-          color = getStrokeColor(1);
-          break;
-        case "/assets/marker_yellow.png":
-          color = getStrokeColor(2);
-          break;
-        case "/assets/marker_green.png":
-          color = getStrokeColor(3);
-          break;
-        case "/assets/marker_blue.png":
-          color = getStrokeColor(4);
-          break;
-        case "/assets/marker_violet.png":
-          color = getStrokeColor(5);
-          break;
-        default:
-          break;
-      }
-      
+    {      
       infoBoxes[markerId] = new InfoBox({content: point_data,
                                          disableAutoPan: false,
                                          pixelOffset: new google.maps.Size(-140, 0),
@@ -281,7 +281,11 @@ function showInfoBox(marker)
     // Else open and show the InfoBox (it could be hidden or closed and it is difficult to
     // determine which is the case)
     else
-    {
+    {      
+      infoBoxes[markerId].setOptions({boxStyle: {background: color,
+                                                 color: fontColor,
+                                                 opacity: 0.90,
+                                                 width: "256px"}});
       infoBoxes[markerId].open(map, marker);
       infoBoxes[markerId].show();
     }
