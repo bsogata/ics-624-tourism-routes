@@ -17,7 +17,12 @@ Ics624TourismRoutes::Application.routes.draw do
   resources :locales do
     get :map
   end
+  
   resources :routes
+  
+  resources :points do
+    get :map
+  end
 
   # Example resource route with options:
   #   resources :products do

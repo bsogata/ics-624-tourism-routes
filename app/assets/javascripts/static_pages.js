@@ -18,6 +18,12 @@ var markers = [];
 var routes = [];
 
 /**
+ * The InfoBoxes on the map.
+ *
+ */
+var infoBoxes = [];
+
+/**
  * The coordinates of the markers on the map.
  *
  */
@@ -189,6 +195,99 @@ function getIconName(routeNumber)
   return icon;
 }
 
+/*
+ * Shows the InfoBox for the given marker.
+ *
+ * Parameters:
+ *   marker    The marker to display an InfoBox for.
+ *   
+ */
+
+function showInfoBox(marker)
+{
+  markerId = markers.indexOf(marker);
+  
+  // Get the data for the selected point
+  $.ajax({type: "GET", url: "/points/" + markerId + "/map", success: function(data)
+  {
+    var wrapper = $("<div></div>").html(data);
+    var point_data = "<div>";
+    
+    $(wrapper).find(".map-data").each(function()
+    {
+      point_data += "<p>" + $(this).html() + "</p>";
+    });
+   
+    point_data += "</div>";
+    
+    // Close all other InfoBox instances
+    for (var j = 0; j < infoBoxes.length; j++)
+    {
+      if (infoBoxes[j] !== undefined)
+      {
+        infoBoxes[j].hide();
+      }
+    }
+    
+    // If an InfoBox for this point does not exist, create and open a new InfoBox
+    if (infoBoxes[markerId] === undefined)
+    {
+      // Default colors
+      var color = "#FFFFFF";
+      var fontColor = "#000000";
+      
+      switch (marker.getIcon())
+      {
+        case "/assets/marker_red.png":
+          color = getStrokeColor(0);
+          break;
+        case "/assets/marker_orange.png":
+          color = getStrokeColor(1);
+          break;
+        case "/assets/marker_yellow.png":
+          color = getStrokeColor(2);
+          break;
+        case "/assets/marker_green.png":
+          color = getStrokeColor(3);
+          break;
+        case "/assets/marker_blue.png":
+          color = getStrokeColor(4);
+          break;
+        case "/assets/marker_violet.png":
+          color = getStrokeColor(5);
+          break;
+        default:
+          break;
+      }
+      
+      infoBoxes[markerId] = new InfoBox({content: point_data,
+                                         disableAutoPan: false,
+                                         pixelOffset: new google.maps.Size(-140, 0),
+                                         zIndex: null,
+                                         boxStyle: {background: color,
+                                                    color: fontColor,
+                                                    opacity: 0.90,
+                                                    width: "256px"},
+                                         closeBoxMargin: "2px 2px 2px 2px",
+                                         closeBoxURL: "http://www.google.com/intl/" +
+                                                      "en_us/mapfiles/close.gif",
+                                         infoBoxClearance: new google.maps.Size(1, 1),
+                                         isHidden: false,
+                                         pane: "floatPane",
+                                         enableEventPropagation: false});
+      infoBoxes[markerId].open(map, marker);
+    }
+    
+    // Else open and show the InfoBox (it could be hidden or closed and it is difficult to
+    // determine which is the case)
+    else
+    {
+      infoBoxes[markerId].open(map, marker);
+      infoBoxes[markerId].show();
+    }
+  }});
+}
+
 $(document).ready(function()
 {  
   // Load the map
@@ -215,6 +314,7 @@ $(document).ready(function()
       google.maps.event.addListener(marker, 'click', function()
       {
         centerMap(this.position.k, this.position.D);
+        showInfoBox(this);
       });
       
       markers[i] = marker;      
@@ -258,6 +358,7 @@ $(document).ready(function()
     $.ajax({type: "GET", url: "/locales/" + locale_id + "/map", success: function(data)
     {
       var wrapper = $("<div></div>").html(data);
+      var markerBounds = new google.maps.LatLngBounds();
       routesInLocale = [];
   
       $(wrapper).find(".route-data").each(function()
@@ -294,10 +395,17 @@ $(document).ready(function()
             {
               markers[routePoints[routesInLocale[k]][m]].setIcon(getIconName(k));
               markers[routePoints[routesInLocale[k]][m]].setMap(map);
+              
+              // Add this point to the bounds to display
+              latitude = coordinates[routePoints[routesInLocale[k]][m]].split(" ")[0];
+              longitude = coordinates[routePoints[routesInLocale[k]][m]].split(" ")[1];
+              markerBounds.extend(new google.maps.LatLng(latitude, longitude));
             }
           }
         }
       }
+      
+      map.fitBounds(markerBounds);
     },
     error: function()
     {
@@ -315,5 +423,5 @@ $(document).ready(function()
       
       alert("No matches found");
     }});
-  });
+  });  
 });
