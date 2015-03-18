@@ -13,3 +13,34 @@ footer
   margin-bottom: 64px;
   text-align: center;
 }
+
+#route-1-button
+{
+  background-color: #FF0000;
+}
+
+#route-2-button
+{
+  background-color: #FFA500;
+}
+
+#route-3-button
+{
+  background-color: #FFFF00;
+}
+
+#route-4-button
+{
+  background-color: #008000;
+}
+
+#route-5-button
+{
+  background-color: #0000FF;
+  color: #FFFFFF;
+}
+
+#route-6-button
+{
+  background-color: #EE82EE;
+}

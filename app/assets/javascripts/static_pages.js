@@ -54,6 +54,12 @@ var routePoints = [];
 var locales = [];
 
 /**
+ * The index of the current locale.
+ *
+ */
+var currentLocale = -1;
+
+/**
  * Initializes the POI and Route data.
  *
  * Parameters:
@@ -298,6 +304,9 @@ $(document).ready(function()
   // (not sure why this has to be in a separate function, but this has to be in a separate function)
   initialize();
 
+  // Disable all route buttons
+  $(".route-button").prop("disabled", true);  
+  
   // Set up markers
   markers = [];
   
@@ -357,9 +366,12 @@ $(document).ready(function()
   // When Search button is clicked on, use AJAX to search for matching locale and display routes
   $("#search-button").click(function()
   {
-    locale_id = locales.indexOf($("#locale").val().toLowerCase());
+    currentLocale = locales.indexOf($("#locale").val().toLowerCase());
+
+    // Disable all route buttons
+    $(".route-button").prop("disabled", true);
     
-    $.ajax({type: "GET", url: "/locales/" + locale_id + "/map", success: function(data)
+    $.ajax({type: "GET", url: "/locales/" + currentLocale + "/map", success: function(data)
     {
       var wrapper = $("<div></div>").html(data);
       var markerBounds = new google.maps.LatLngBounds();
@@ -391,7 +403,9 @@ $(document).ready(function()
           routes[routesInLocale[k]].strokeColor = getStrokeColor(k);
           routes[routesInLocale[k]].setMap(map);
            
-           // Show markers on the map with the correct color         
+          $("#route-" + (k+1) + "-button").prop("disabled", false); 
+           
+          // Show markers on the map with the correct color         
           for (var m = 0; m < routePoints[routesInLocale[k]].length; m++)
           {
             // Only if the icon is not already visible
@@ -425,7 +439,32 @@ $(document).ready(function()
         markers[j].setMap(null);
       }
       
+      currentLocale = -1;
+      routesInLocale = [];
+      
       alert("No matches found");
     }});
-  });  
+  });
+  
+  // Zoom in on a route when its corresponding button is clicked on
+  $(".route-button").click(function()
+  {
+    // If current locale is -1, then no routes are visible and routesInLocale is empty
+    if (currentLocale != -1)
+    {
+      var id = parseInt($(this).attr("id").replace("route-", "").replace("-button", ""));
+      var route = routesInLocale[id - 1];
+      var markerBounds = new google.maps.LatLngBounds();
+      
+      // Add all markers in the route to the bounds to zoom to
+      for (var i = 0; i < routePoints[route].length; i++)
+      {
+        latitude = coordinates[routePoints[route][i]].split(" ")[0];
+        longitude = coordinates[routePoints[route][i]].split(" ")[1];
+        markerBounds.extend(new google.maps.LatLng(latitude, longitude));
+      }
+      
+      map.fitBounds(markerBounds);      
+    }
+  });
 });

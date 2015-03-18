@@ -17,6 +17,7 @@
   <% unless r.name.nil? || r.points_on_route.nil? %>
     <% route_names[r.id] = r.name %>
     <% routes[r.id] = r.to_array %>
+    <% print "#{r.name}: #{routes[r.id]}\n" %>
   <% end %>
 <% end %>
 
@@ -32,8 +33,18 @@
                  <%= raw locales.to_json %>);
 <% end %>
 
-<div id="map" class="jumbotron">
-  
+<div id="map-panel" class="jumbotron">
+  <div class="row">
+    <button id="route-1-button" type="button" class="btn col-sm-2 route-button">Route 1</button>
+    <button id="route-2-button" type="button" class="btn col-sm-2 route-button">Route 2</button>
+    <button id="route-3-button" type="button" class="btn col-sm-2 route-button">Route 3</button>
+    <button id="route-4-button" type="button" class="btn col-sm-2 route-button">Route 4</button>
+    <button id="route-5-button" type="button" class="btn col-sm-2 route-button">Route 5</button>
+    <button id="route-6-button" type="button" class="btn col-sm-2 route-button">Route 6</button>
+  </div>
+  <div id="map">
+    
+  </div>  
 </div>
 <form id="search-fields" class="center-block form-inline">
   <div class="form-group">
