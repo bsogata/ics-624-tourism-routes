@@ -467,4 +467,18 @@ $(document).ready(function()
       map.fitBounds(markerBounds);      
     }
   });
+  
+  // Click the Search button in response to an Enter keypress
+  $("#locale").keypress(function(e)
+  {
+    var code = (e.keyCode ? e.keyCode : e.which);
+  
+    // If Enter, then essentially do everything that the click would
+    if (code == 13)
+    {
+      e.preventDefault();
+      
+      $("#search-button").click();
+    }    
+  });
 });
