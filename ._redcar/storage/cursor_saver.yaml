@@ -1,0 +1,9 @@
+--- 
+cursor_positions: 
+  - :path: app/views/static_pages/index.html.erb
+    :cursor_offset: 26
+    :timestamp: 2015-03-18 10:37:51.794000 -10:00
+  - :path: app/assets/javascripts/static_pages.js
+    :cursor_offset: 10115
+    :timestamp: 2015-04-17 08:25:50.200000 -10:00
+files_to_retain: 0

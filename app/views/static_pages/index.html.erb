@@ -33,23 +33,20 @@
                  <%= raw locales.to_json %>);
 <% end %>
 
-<div id="map-panel" class="jumbotron">
-  <div class="row">
-    <button id="route-1-button" type="button" class="btn col-sm-2 route-button">Route 1</button>
-    <button id="route-2-button" type="button" class="btn col-sm-2 route-button">Route 2</button>
-    <button id="route-3-button" type="button" class="btn col-sm-2 route-button">Route 3</button>
-    <button id="route-4-button" type="button" class="btn col-sm-2 route-button">Route 4</button>
-    <button id="route-5-button" type="button" class="btn col-sm-2 route-button">Route 5</button>
-    <button id="route-6-button" type="button" class="btn col-sm-2 route-button">Route 6</button>
+<div id="map-panel" class="jumbotron row">
+  <div class="col-sm-9">
+    <div id="map">
+      
+    </div>  
+    <form id="search-fields" class="center-block form-inline">
+      <div class="form-group">
+        <label for="locale" class="label label-default">Search Criteria:</label>
+        <input id="locale" name="locale" class="form-control" type="text">
+        <button type="button" id="search-button">Search</button>
+      </div>
+    </form>
   </div>
-  <div id="map">
+  <div id="info-panel" class="col-sm-3 well">
     
-  </div>  
-</div>
-<form id="search-fields" class="center-block form-inline">
-  <div class="form-group">
-    <label for="locale" class="label label-default">Search Criteria:</label>
-    <input id="locale" name="locale" class="form-control" type="text">
-    <button type="button" id="search-button">Search</button>
   </div>
-</form>
+</div>

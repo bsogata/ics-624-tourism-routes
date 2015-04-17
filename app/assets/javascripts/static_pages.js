@@ -92,7 +92,7 @@ function initializeData(coordinates, names, routeNames, routePoints, locales)
 function centerMap(latitude, longitude)
 {
   map.panTo(new google.maps.LatLng(latitude, longitude));
-  map.setZoom(12);
+  map.setZoom((map.getZoom() > 12) ? (map.getZoom()) : (12));
 }
 
 /*
@@ -121,33 +121,38 @@ function initialize()
 function getStrokeColor(routeNumber)
 {
   var color = "#000000";
-  
+    
   switch (routeNumber)
   {
-    // Red
+    // PapayaWhip
     case 0:
-      color = "#FF0000";
+      color = "#FFEFD5";
       break;
-    // Orange
+    // GreenYellow
     case 1:
-      color = "#FFA500";
+      color = "#ADFF2F";
       break;
-    // Yellow
+    // LightGoldenRodYellow
     case 2:
-      color = "#FFFF00";
+      color = "#FAFAD2";
       break;
-    // Green
+    // LightGray
     case 3:
-      color = "#008000";
+      color = "#D3D3D3";
       break;
-    // Blue
+    // Pink
     case 4:
-      color = "#0000FF";
+      color = "#FFC0CB";
       break;
-    // Violet
+    // PowderBlue
     case 5:
-      color = "#EE82EE";
+      color = "#B0E0E6";
       break;
+    // Lavender
+    case 6:
+      color = "#E6E6FA";
+      break;
+      
   }
   
   return color;
@@ -166,33 +171,45 @@ function getStrokeColor(routeNumber)
 
 function getIconName(routeNumber)
 {
-  var icon = "/assets/marker";
+  var icon = "/assets/circle_marker";
+  
+// PapayaWhip: #FFEFD5
+// GreenYellow: #ADFF2F
+// LightGoldenRodYellow: #FAFAD2
+// LightGray: #D3D3D3
+// Pink: #FFC0CB
+// PowderBlue: #B0E0E6
+// Lavender: #E6E6FA  
   
   switch (routeNumber)
   {
-    // Red
+    // PapayaWhip
     case 0:
-      icon += "_red";
+      icon += "_papayawhip";
       break;
-    // Orange
+    // GreenYellow
     case 1:
-      icon += "_orange";
+      icon += "_greenyellow";
       break;
-    // Yellow
+    // LightGoldenRodYellow
     case 2:
-      icon += "_yellow";
+      icon += "_lightgoldenrodyellow";
       break;
-    // Green
+    // LightGray
     case 3:
-      icon += "_green";
+      icon += "_lightgray";
       break;
-    // Blue
+    // Pink
     case 4:
-      icon += "_blue";
+      icon += "_pink";
       break;
-    // Violet
+    // PowderBlue
     case 5:
-      icon += "_violet";
+      icon += "_powderblue";
+      break;
+    // Lavender
+    case 6:
+      icon += "_lavender";
       break;
   }
   
@@ -241,22 +258,22 @@ function showInfoBox(marker)
     
     switch (marker.getIcon())
     {
-      case "/assets/marker_red.png":
+      case "/assets/circle_marker_red.png":
         color = getStrokeColor(0);
         break;
-      case "/assets/marker_orange.png":
+      case "/assets/circle_marker_orange.png":
         color = getStrokeColor(1);
         break;
-      case "/assets/marker_yellow.png":
+      case "/assets/circle_marker_yellow.png":
         color = getStrokeColor(2);
         break;
-      case "/assets/marker_green.png":
+      case "/assets/circle_marker_green.png":
         color = getStrokeColor(3);
         break;
-      case "/assets/marker_blue.png":
+      case "/assets/circle_marker_blue.png":
         color = getStrokeColor(4);
         break;
-      case "/assets/marker_violet.png":
+      case "/assets/circle_marker_violet.png":
         color = getStrokeColor(5);
         break;
       default:
@@ -323,11 +340,23 @@ $(document).ready(function()
                                             title: name
                                           });
       
-      // When clicked on, center the map on the marker
+      // When clicked on, center the map on the marker and update the marker info in the side panel
       google.maps.event.addListener(marker, 'click', function()
       {
         centerMap(this.position.k, this.position.D);
-        showInfoBox(this);
+        
+        var header = $("<h3></h3>").text(names[markers.indexOf(this)]);
+        var subheader = $("<small></small>").text(" in " + locales[currentLocale]);
+        $(header).append(subheader);
+        
+        // Add images of this location
+        var image0 = $("<a></a>").attr("href", "#").attr("class", "thumbnail").text("Image 0");
+        var image1 = $("<a></a>").attr("href", "#").attr("class", "thumbnail").text("Image 1");
+        var image2 = $("<a></a>").attr("href", "#").attr("class", "thumbnail").text("Image 2");
+        var image3 = $("<a></a>").attr("href", "#").attr("class", "thumbnail").text("Image 3");
+        
+        $("#info-panel").empty();
+        $("#info-panel").append(header, image0, image1, image2, image3);
       });
       
       markers[i] = marker;      
@@ -361,6 +390,41 @@ $(document).ready(function()
                                          });
     
     routes[j] = route;
+
+    // When clicked on, center the map on the route and update the route info in the right panel
+    google.maps.event.addListener(route, 'click', function()
+    {
+      var id = routes.indexOf(this);
+      var route = this;
+      var markerBounds = new google.maps.LatLngBounds();
+      
+      // Add all markers in the route to the bounds to zoom to
+      for (var i = 0; i < routePoints[id].length; i++)
+      {
+        latitude = coordinates[routePoints[id][i]].split(" ")[0];
+        longitude = coordinates[routePoints[id][i]].split(" ")[1];
+        markerBounds.extend(new google.maps.LatLng(latitude, longitude));
+      }
+      
+      map.fitBounds(markerBounds);
+      
+      var header = $("<h3></h3>").text("Route " + routeNames[id]);
+      var subheader = $("<small></small>").text(" in " + locales[currentLocale]);
+      $(header).append(subheader);
+      
+      // Add links to the blogs detailing this route
+      var linkList = $("<ul></ul>");
+      var link0 = $("<a></a>").attr("href", "#").text("Link 0");
+      var link1 = $("<a></a>").attr("href", "#").text("Link 1");
+      var link2 = $("<a></a>").attr("href", "#").text("Link 2");
+      var link3 = $("<a></a>").attr("href", "#").text("Link 3");        
+      
+      $(linkList).append($("<li></li>").append(link0), $("<li></li>").append(link1),
+                         $("<li></li>").append(link2), $("<li></li>").append(link3));
+      
+      $("#info-panel").empty();
+      $("#info-panel").append(header, linkList);
+    });  
   }
   
   // When Search button is clicked on, use AJAX to search for matching locale and display routes
@@ -411,7 +475,8 @@ $(document).ready(function()
             // Only if the icon is not already visible
             if (markers[routePoints[routesInLocale[k]][m]].getMap() != map)
             {
-              markers[routePoints[routesInLocale[k]][m]].setIcon(getIconName(k));
+              markers[routePoints[routesInLocale[k]][m]].setIcon({url: getIconName(k),
+                                                                  anchor: new google.maps.Point(8, 8)});
               markers[routePoints[routesInLocale[k]][m]].setMap(map);
               
               // Add this point to the bounds to display
