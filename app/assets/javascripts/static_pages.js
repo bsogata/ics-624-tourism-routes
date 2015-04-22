@@ -315,6 +315,31 @@ function showInfoBox(marker)
   }});
 }
 
+/*
+ * Naive title-case conversion.
+ *
+ * Parameters:
+ *   text    The string to convert to title-case.
+ *
+ * Return:
+ *   A string equivalent to the parameter after converting to title-case.
+ *   
+ */
+
+function toTitleCase(text)
+{
+  var titleCase = text[0].toUpperCase() + text.substr(1);
+  
+  for (var i = 0; i < text.length - 1; i++)
+  {
+    if (titleCase[i].match(/\W/)) {
+      titleCase = titleCase.substr(0, i + 1) + titleCase[i + 1].toUpperCase() + titleCase.substr(i + 2);
+    }
+  }
+  
+  return titleCase;
+}
+
 $(document).ready(function()
 {  
   // Load the map
@@ -431,10 +456,20 @@ $(document).ready(function()
   $("#search-button").click(function()
   {
     currentLocale = locales.indexOf($("#locale").val().toLowerCase());
-
-    // Disable all route buttons
-    $(".route-button").prop("disabled", true);
     
+    $.ajax({type: "GET", url: "/locales/" + currentLocale + "/poi", success: function(data)
+    {
+      var wrapper = $("<div></div>").html(data);
+      
+      $("#info-panel").empty();
+      $("#info-panel").append($("<h3></h3>").text(toTitleCase($("#locale").val())));
+      
+      $(wrapper).find(".poi").each(function()
+      {
+        $("#info-panel").append(this);
+      });
+    }});
+
     $.ajax({type: "GET", url: "/locales/" + currentLocale + "/map", success: function(data)
     {
       var wrapper = $("<div></div>").html(data);

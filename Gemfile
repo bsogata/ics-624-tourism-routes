@@ -58,3 +58,6 @@ gem 'annotate', group: :development
 
 gem "paperclip"
 gem "tabs_on_rails"
+
+# For web scraping
+gem 'nokogiri'
