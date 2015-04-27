@@ -16,7 +16,7 @@ class Point < ActiveRecord::Base
     gmaps_latitude = (latitude.nil? || latitude.empty?) ? (0) : (latitude.strip.chop.to_f)
     gmaps_longitude = (longitude.nil? || latitude.empty?) ? (0) : (longitude.strip.chop.to_f)
     
-    puts "Latitude: #{gmaps_latitude}, Longitude: #{-gmaps_longitude}"
+#    puts "Latitude: #{gmaps_latitude}, Longitude: #{-gmaps_longitude}"
     
     "#{gmaps_latitude} #{-gmaps_longitude}"
   end

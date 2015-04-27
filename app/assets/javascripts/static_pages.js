@@ -457,7 +457,8 @@ $(document).ready(function()
   {
     currentLocale = locales.indexOf($("#locale").val().toLowerCase());
     
-    $.ajax({type: "GET", url: "/locales/" + currentLocale + "/poi", success: function(data)
+    $.ajax({type: "GET", url: "/locales/" + currentLocale + "/poi",
+            data: "localeName=" + $("#locale").val().toLowerCase(), success: function(data)
     {
       var wrapper = $("<div></div>").html(data);
       
@@ -470,7 +471,8 @@ $(document).ready(function()
       });
     }});
 
-    $.ajax({type: "GET", url: "/locales/" + currentLocale + "/map", success: function(data)
+    $.ajax({type: "GET", url: "/locales/" + currentLocale + "/map",
+            data: "localeName=" + $("#locale").val().toLowerCase(), success: function(data)
     {
       var wrapper = $("<div></div>").html(data);
       var markerBounds = new google.maps.LatLngBounds();
