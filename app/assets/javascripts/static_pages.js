@@ -369,7 +369,7 @@ function setupMarkers()
         // When clicked on, center the map on the marker and update the marker info in the side panel
         google.maps.event.addListener(marker, 'click', function()
         {
-          centerMap(this.position.k, this.position.D);
+          centerMap(this.position.lat(), this.position.lng());
           
           var header = $("<h3></h3>").text(names[markers.indexOf(this)]);
           var subheader = $("<small></small>").text(" in " + locales[currentLocale]);
@@ -410,7 +410,7 @@ function setupRoutes()
       {
         var pointID = parseInt(routePoints[j][k]);
         
-        if ((0 < pointID) && (pointID < markers.length))
+        if ((0 < pointID) && (pointID < markers.length) && (coordinates[pointID] != null))
         {
           pointsOnRoute.push(new google.maps.LatLng(coordinates[pointID].split(" ")[0],
                                                     coordinates[pointID].split(" ")[1]));
@@ -514,13 +514,19 @@ $(document).ready(function()
       // Hide all routes
       for (var i = 1; i < routes.length; i++)
       {
-        routes[i].setMap(null);
+        if (routes[i] != null)
+        {
+          routes[i].setMap(null);
+        }
       }
       
       // Hide all markers
       for (var j = 1; j < markers.length; j++)
       {
-        markers[j].setMap(null);
+        if (markers[j] != null)
+        {
+          markers[j].setMap(null);
+        }
       }
       
       // Show the routes and markers for the routes in routesInLocale
@@ -560,13 +566,20 @@ $(document).ready(function()
       // Hide all routes
       for (var i = 1; i < routes.length; i++)
       {
-        routes[i].setMap(null);
+        if (routes[i] != null)
+        {
+          routes[i].setMap(null);
+        }
       }
       
       // Hide all markers
       for (var j = 1; j < markers.length; j++)
       {
-        markers[j].setMap(null);
+        if (markers[j] != null)
+        {
+          markers[j].setMap(null);
+        }
+        
       }
       
       currentLocale = -1;
