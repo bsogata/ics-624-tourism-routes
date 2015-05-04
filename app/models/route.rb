@@ -10,6 +10,7 @@
 #
 
 class Route < ActiveRecord::Base
+  has_many :sources
   #
   # Returns the number of Points on this Route.
   #

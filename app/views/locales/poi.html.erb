@@ -2,4 +2,43 @@
   <% get_points_of_interest(@locale.name).each do |poi| %>
     <div class="poi"><%= poi %></div>
   <% end %>
+  
+  <!-- Update the points of interest on the map -->
+  <div id="map-update">
+    <% poi_coordinates = [] %>
+    <% poi_names = [] %>
+    <% route_names = [] %>
+    <% routes = [] %>
+    <% locales = [] %>
+    
+    <% Point.all.each do |p| %>
+      <% unless p.latitude.nil? || p.longitude.nil? || p.name.nil? %>
+        <% poi_coordinates[p.id] = p.gmaps_address %>
+        <% poi_names[p.id] = p.name %>
+      <% end %>
+    <% end %>
+    
+    <% Route.all.each do |r| %>
+      <% unless r.name.nil? || r.points_on_route.nil? %>
+        <% route_names[r.id] = r.name %>
+        <% routes[r.id] = r.to_array %>
+        <% print "#{r.name}: #{routes[r.id]}\n" %>
+      <% end %>
+    <% end %>
+    
+    <% Locale.all.each do |l| %>
+      <% unless l.name.nil? %>
+        <% locales[l.id] = l.name.downcase %>
+      <% end %>
+    <% end %>
+    
+    <%= javascript_tag do %>
+      initializeData(<%= raw poi_coordinates.to_json %>, <%= raw poi_names.to_json %>,
+                     <%= raw route_names.to_json %>, <%= raw routes.to_json %>,
+                     <%= raw locales.to_json %>);
+      setupMarkers();
+      setupRoutes();
+      alert("Executed JavaScript");
+    <% end %>
+  </div>
 </div>

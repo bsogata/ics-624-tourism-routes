@@ -340,20 +340,18 @@ function toTitleCase(text)
   return titleCase;
 }
 
-$(document).ready(function()
-{  
-  // Load the map
-  // (not sure why this has to be in a separate function, but this has to be in a separate function)
-  initialize();
+/*
+ * Sets up the markers on the map.
+ * 
+ */
 
-  // Disable all route buttons
-  $(".route-button").prop("disabled", true);  
-  
-  // Set up markers
+function setupMarkers()
+{
   markers = [];
   
   for (var i = 1; i < names.length; i++)
   {
+    console.log("Setting up marker " + i);
     var latitude = coordinates[i].split(" ")[0];
     var longitude = coordinates[i].split(" ")[1];
     var name = names[i];
@@ -387,8 +385,15 @@ $(document).ready(function()
       markers[i] = marker;      
     }
   }
-  
-  // Set up routes
+}
+
+/**
+ * Sets up routes on the map.
+ * 
+ */
+
+function setupRoutes()
+{
   routes = [];
   
   for (var j = 1; j < routeNames.length; j++)
@@ -451,6 +456,20 @@ $(document).ready(function()
       $("#info-panel").append(header, linkList);
     });  
   }
+}
+
+$(document).ready(function()
+{  
+  // Load the map
+  // (not sure why this has to be in a separate function, but this has to be in a separate function)
+  initialize();
+
+  // Disable all route buttons
+  $(".route-button").prop("disabled", true);  
+  
+  // Set up map elements
+  setupMarkers();
+  setupRoutes();
   
   // When Search button is clicked on, use AJAX to search for matching locale and display routes
   $("#search-button").click(function()
@@ -469,6 +488,8 @@ $(document).ready(function()
       {
         $("#info-panel").append(this);
       });
+      
+      $("body").append($(wrapper).find("#map-update"));
     }});
 
     $.ajax({type: "GET", url: "/locales/" + currentLocale + "/map",
