@@ -352,37 +352,41 @@ function setupMarkers()
   for (var i = 1; i < names.length; i++)
   {
     console.log("Setting up marker " + i);
-    var latitude = coordinates[i].split(" ")[0];
-    var longitude = coordinates[i].split(" ")[1];
-    var name = names[i];
     
-    if ((latitude != "") && (longitude != ""))
+    if (coordinates[i] != null)
     {
-      var marker = new google.maps.Marker({
-                                            position: new google.maps.LatLng(latitude, longitude),
-                                            title: name
-                                          });
+      var latitude = coordinates[i].split(" ")[0];
+      var longitude = coordinates[i].split(" ")[1];
+      var name = names[i];
       
-      // When clicked on, center the map on the marker and update the marker info in the side panel
-      google.maps.event.addListener(marker, 'click', function()
+      if ((latitude != "") && (longitude != ""))
       {
-        centerMap(this.position.k, this.position.D);
+        var marker = new google.maps.Marker({
+                                              position: new google.maps.LatLng(latitude, longitude),
+                                              title: name
+                                            });
         
-        var header = $("<h3></h3>").text(names[markers.indexOf(this)]);
-        var subheader = $("<small></small>").text(" in " + locales[currentLocale]);
-        $(header).append(subheader);
+        // When clicked on, center the map on the marker and update the marker info in the side panel
+        google.maps.event.addListener(marker, 'click', function()
+        {
+          centerMap(this.position.k, this.position.D);
+          
+          var header = $("<h3></h3>").text(names[markers.indexOf(this)]);
+          var subheader = $("<small></small>").text(" in " + locales[currentLocale]);
+          $(header).append(subheader);
+          
+          // Add images of this location
+          var image0 = $("<a></a>").attr("href", "#").attr("class", "thumbnail").text("Image 0");
+          var image1 = $("<a></a>").attr("href", "#").attr("class", "thumbnail").text("Image 1");
+          var image2 = $("<a></a>").attr("href", "#").attr("class", "thumbnail").text("Image 2");
+          var image3 = $("<a></a>").attr("href", "#").attr("class", "thumbnail").text("Image 3");
+          
+          $("#info-panel").empty();
+          $("#info-panel").append(header, image0, image1, image2, image3);
+        });
         
-        // Add images of this location
-        var image0 = $("<a></a>").attr("href", "#").attr("class", "thumbnail").text("Image 0");
-        var image1 = $("<a></a>").attr("href", "#").attr("class", "thumbnail").text("Image 1");
-        var image2 = $("<a></a>").attr("href", "#").attr("class", "thumbnail").text("Image 2");
-        var image3 = $("<a></a>").attr("href", "#").attr("class", "thumbnail").text("Image 3");
-        
-        $("#info-panel").empty();
-        $("#info-panel").append(header, image0, image1, image2, image3);
-      });
-      
-      markers[i] = marker;      
+        markers[i] = marker;      
+      }
     }
   }
 }
@@ -398,63 +402,66 @@ function setupRoutes()
   
   for (var j = 1; j < routeNames.length; j++)
   {
-    var pointsOnRoute = [];
-    
-    for (var k = 0; k < routePoints[j].length; k++)
+    if (routeNames[j] != null)
     {
-      var pointID = parseInt(routePoints[j][k]);
+      var pointsOnRoute = [];
       
-      if ((0 < pointID) && (pointID < markers.length))
+      for (var k = 0; k < routePoints[j].length; k++)
       {
-        pointsOnRoute.push(new google.maps.LatLng(coordinates[pointID].split(" ")[0],
-                                                  coordinates[pointID].split(" ")[1]));
+        var pointID = parseInt(routePoints[j][k]);
+        
+        if ((0 < pointID) && (pointID < markers.length))
+        {
+          pointsOnRoute.push(new google.maps.LatLng(coordinates[pointID].split(" ")[0],
+                                                    coordinates[pointID].split(" ")[1]));
+        }
       }
+      
+      var route = new google.maps.Polyline({
+                                             path: pointsOnRoute,
+                                             geodesic: true,
+                                             strokeColor: "#000000",
+                                             strokeOpacity: 1.0,
+                                             strokeWeight: 4
+                                           });
+      
+      routes[j] = route;
+  
+      // When clicked on, center the map on the route and update the route info in the right panel
+      google.maps.event.addListener(route, 'click', function()
+      {
+        var id = routes.indexOf(this);
+        var route = this;
+        var markerBounds = new google.maps.LatLngBounds();
+        
+        // Add all markers in the route to the bounds to zoom to
+        for (var i = 0; i < routePoints[id].length; i++)
+        {
+          latitude = coordinates[routePoints[id][i]].split(" ")[0];
+          longitude = coordinates[routePoints[id][i]].split(" ")[1];
+          markerBounds.extend(new google.maps.LatLng(latitude, longitude));
+        }
+        
+        map.fitBounds(markerBounds);
+        
+        var header = $("<h3></h3>").text("Route " + routeNames[id]);
+        var subheader = $("<small></small>").text(" in " + locales[currentLocale]);
+        $(header).append(subheader);
+        
+        // Add links to the blogs detailing this route
+        var linkList = $("<ul></ul>");
+        var link0 = $("<a></a>").attr("href", "#").text("Link 0");
+        var link1 = $("<a></a>").attr("href", "#").text("Link 1");
+        var link2 = $("<a></a>").attr("href", "#").text("Link 2");
+        var link3 = $("<a></a>").attr("href", "#").text("Link 3");        
+        
+        $(linkList).append($("<li></li>").append(link0), $("<li></li>").append(link1),
+                           $("<li></li>").append(link2), $("<li></li>").append(link3));
+        
+        $("#info-panel").empty();
+        $("#info-panel").append(header, linkList);
+      });
     }
-    
-    var route = new google.maps.Polyline({
-                                           path: pointsOnRoute,
-                                           geodesic: true,
-                                           strokeColor: "#000000",
-                                           strokeOpacity: 1.0,
-                                           strokeWeight: 4
-                                         });
-    
-    routes[j] = route;
-
-    // When clicked on, center the map on the route and update the route info in the right panel
-    google.maps.event.addListener(route, 'click', function()
-    {
-      var id = routes.indexOf(this);
-      var route = this;
-      var markerBounds = new google.maps.LatLngBounds();
-      
-      // Add all markers in the route to the bounds to zoom to
-      for (var i = 0; i < routePoints[id].length; i++)
-      {
-        latitude = coordinates[routePoints[id][i]].split(" ")[0];
-        longitude = coordinates[routePoints[id][i]].split(" ")[1];
-        markerBounds.extend(new google.maps.LatLng(latitude, longitude));
-      }
-      
-      map.fitBounds(markerBounds);
-      
-      var header = $("<h3></h3>").text("Route " + routeNames[id]);
-      var subheader = $("<small></small>").text(" in " + locales[currentLocale]);
-      $(header).append(subheader);
-      
-      // Add links to the blogs detailing this route
-      var linkList = $("<ul></ul>");
-      var link0 = $("<a></a>").attr("href", "#").text("Link 0");
-      var link1 = $("<a></a>").attr("href", "#").text("Link 1");
-      var link2 = $("<a></a>").attr("href", "#").text("Link 2");
-      var link3 = $("<a></a>").attr("href", "#").text("Link 3");        
-      
-      $(linkList).append($("<li></li>").append(link0), $("<li></li>").append(link1),
-                         $("<li></li>").append(link2), $("<li></li>").append(link3));
-      
-      $("#info-panel").empty();
-      $("#info-panel").append(header, linkList);
-    });  
   }
 }
 
