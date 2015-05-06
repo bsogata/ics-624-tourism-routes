@@ -49,3 +49,17 @@ footer
 {
   height: 512px;
 }
+
+main
+{
+  height: 100%;
+  width: 100%;
+  position: absolute;
+  background-size: cover;
+}
+
+.container
+{
+  height: 100%;
+  width: 100%;
+}

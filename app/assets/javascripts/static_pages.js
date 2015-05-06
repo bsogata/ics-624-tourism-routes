@@ -124,35 +124,60 @@ function getStrokeColor(routeNumber)
     
   switch (routeNumber)
   {
-    // PapayaWhip
-    case 0:
-      color = "#FFEFD5";
-      break;
-    // GreenYellow
-    case 1:
-      color = "#ADFF2F";
-      break;
-    // LightGoldenRodYellow
-    case 2:
-      color = "#FAFAD2";
-      break;
-    // LightGray
-    case 3:
-      color = "#D3D3D3";
-      break;
-    // Pink
-    case 4:
-      color = "#FFC0CB";
-      break;
-    // PowderBlue
-    case 5:
-      color = "#B0E0E6";
-      break;
-    // Lavender
-    case 6:
-      color = "#E6E6FA";
-      break;
+    //// PapayaWhip
+    //case 0:
+    //  color = "#FFEFD5";
+    //  break;
+    //// GreenYellow
+    //case 1:
+    //  color = "#ADFF2F";
+    //  break;
+    //// LightGoldenRodYellow
+    //case 2:
+    //  color = "#FAFAD2";
+    //  break;
+    //// LightGray
+    //case 3:
+    //  color = "#D3D3D3";
+    //  break;
+    //// Pink
+    //case 4:
+    //  color = "#FFC0CB";
+    //  break;
+    //// PowderBlue
+    //case 5:
+    //  color = "#B0E0E6";
+    //  break;
+    //// Lavender
+    //case 6:
+    //  color = "#E6E6FA";
+    //  break;
       
+      
+    // Red
+    case 0:
+      color = "#FF0000";
+      break;
+    // Orange
+    case 1:
+      color = "#FFA500";
+      break;
+    // Yellow
+    case 2:
+      color = "#FFFF00";
+      break;
+    // Green
+    case 3:
+      color = "#008000";
+      break;
+    // Blue
+    case 4:
+      color = "#0000FF";
+      break;
+    // Violet
+    case 5:
+      color = "#EE82EE";
+      break;      
   }
   
   return color;
@@ -450,13 +475,15 @@ function setupRoutes()
         
         // Add links to the blogs detailing this route
         var linkList = $("<ul></ul>");
-        var link0 = $("<a></a>").attr("href", "#").text("Link 0");
-        var link1 = $("<a></a>").attr("href", "#").text("Link 1");
-        var link2 = $("<a></a>").attr("href", "#").text("Link 2");
-        var link3 = $("<a></a>").attr("href", "#").text("Link 3");        
-        
-        $(linkList).append($("<li></li>").append(link0), $("<li></li>").append(link1),
-                           $("<li></li>").append(link2), $("<li></li>").append(link3));
+        $.ajax({type: "GET", url: "/routes/" + id + "/sources", success: function(data)
+        {
+          var wrapper = $("<div></div>").html(data);
+          
+          $(wrapper).find(".source").each(function()
+          {
+            $(linkList).append($("<li></li>").append(this));
+          });
+        }});
         
         $("#info-panel").empty();
         $("#info-panel").append(header, linkList);
@@ -495,98 +522,113 @@ $(document).ready(function()
       {
         $("#info-panel").append(this);
       });
-      
-      $("body").append($(wrapper).find("#map-update"));
-    }});
-
-    $.ajax({type: "GET", url: "/locales/" + currentLocale + "/map",
-            data: "localeName=" + $("#locale").val().toLowerCase(), success: function(data)
+    }}).done(function()
     {
-      var wrapper = $("<div></div>").html(data);
-      var markerBounds = new google.maps.LatLngBounds();
-      routesInLocale = [];
-  
-      $(wrapper).find(".route-data").each(function()
+      $.ajax({type: "GET", url: "/locales/" + currentLocale + "/routes",
+              data: "localeName=" + $("#locale").val().toLowerCase(), success: function(data)
       {
-        routesInLocale.push($(this).text());
-      });
-      
-      // Hide all routes
-      for (var i = 1; i < routes.length; i++)
+        var wrapper = $("<div></div>").html(data);
+        $("body").append($(wrapper).find("#map-update"));
+      }, error: function()
       {
-        if (routes[i] != null)
+        alert("Attempt to update routes for " + $("#locale").val() + " failed");
+      }}).done(function()
+      {
+        $.ajax({type: "GET", url: "/locales/" + currentLocale + "/map",
+                data: "localeName=" + $("#locale").val().toLowerCase(), success: function(data)
         {
-          routes[i].setMap(null);
-        }
-      }
+          var wrapper = $("<div></div>").html(data);
+          var markerBounds = new google.maps.LatLngBounds();
+          routesInLocale = [];
       
-      // Hide all markers
-      for (var j = 1; j < markers.length; j++)
-      {
-        if (markers[j] != null)
-        {
-          markers[j].setMap(null);
-        }
-      }
-      
-      // Show the routes and markers for the routes in routesInLocale
-      for (var k = 0; k < routesInLocale.length; k++)
-      {
-        if (routesInLocale[k] != "")
-        {
-          // Show route on the map with the correct color
-          routes[routesInLocale[k]].strokeColor = getStrokeColor(k);
-          routes[routesInLocale[k]].setMap(map);
-           
-          $("#route-" + (k+1) + "-button").prop("disabled", false); 
-           
-          // Show markers on the map with the correct color         
-          for (var m = 0; m < routePoints[routesInLocale[k]].length; m++)
+          $(wrapper).find(".route-data").each(function()
           {
-            // Only if the icon is not already visible
-            if (markers[routePoints[routesInLocale[k]][m]].getMap() != map)
+            routesInLocale.push($(this).text());
+          });
+          
+          // Hide all routes
+          for (var i = 1; i < routes.length; i++)
+          {
+            if (routes[i] != null)
             {
-              markers[routePoints[routesInLocale[k]][m]].setIcon({url: getIconName(k),
-                                                                  anchor: new google.maps.Point(8, 8)});
-              markers[routePoints[routesInLocale[k]][m]].setMap(map);
-              
-              // Add this point to the bounds to display
-              latitude = coordinates[routePoints[routesInLocale[k]][m]].split(" ")[0];
-              longitude = coordinates[routePoints[routesInLocale[k]][m]].split(" ")[1];
-              markerBounds.extend(new google.maps.LatLng(latitude, longitude));
+              routes[i].setMap(null);
             }
           }
-        }
-      }
-      
-      map.fitBounds(markerBounds);
-    },
-    error: function()
-    {
-      // Hide all routes
-      for (var i = 1; i < routes.length; i++)
-      {
-        if (routes[i] != null)
+          
+          // Hide all markers
+          for (var j = 1; j < markers.length; j++)
+          {
+            if (markers[j] != null)
+            {
+              markers[j].setMap(null);
+            }
+          }
+          
+          // Show the routes and markers for the routes in routesInLocale
+          for (var k = 0; k < routesInLocale.length; k++)
+          {
+            if ((routesInLocale[k] != "") && (routesInLocale[k] != null) &&
+                (routes[routesInLocale[k]] != null))
+            {
+              // Show route on the map with the correct color
+              routes[routesInLocale[k]].strokeColor = getStrokeColor(k);
+              routes[routesInLocale[k]].setMap(map);
+               
+              $("#route-" + (k+1) + "-button").prop("disabled", false); 
+               
+              // Show markers on the map with the correct color         
+              for (var m = 0; m < routePoints[routesInLocale[k]].length; m++)
+              {
+                // Only if the icon is not already visible
+                if (markers[routePoints[routesInLocale[k]][m]].getMap() != map)
+                {
+                  markers[routePoints[routesInLocale[k]][m]].setIcon({url: getIconName(k),
+                                                                      anchor: new google.maps.Point(8, 8)});
+                  markers[routePoints[routesInLocale[k]][m]].setMap(map);
+                  
+                  // Add this point to the bounds to display
+                  latitude = coordinates[routePoints[routesInLocale[k]][m]].split(" ")[0];
+                  longitude = coordinates[routePoints[routesInLocale[k]][m]].split(" ")[1];
+                  markerBounds.extend(new google.maps.LatLng(latitude, longitude));
+                }
+              }
+            }
+          }
+          
+          map.fitBounds(markerBounds);
+        },
+        error: function()
         {
-          routes[i].setMap(null);
-        }
-      }
-      
-      // Hide all markers
-      for (var j = 1; j < markers.length; j++)
-      {
-        if (markers[j] != null)
-        {
-          markers[j].setMap(null);
-        }
-        
-      }
-      
-      currentLocale = -1;
-      routesInLocale = [];
-      
-      alert("No matches found");
-    }});
+          // Hide all routes
+          for (var i = 1; i < routes.length; i++)
+          {
+            if (routes[i] != null)
+            {
+              routes[i].setMap(null);
+            }
+          }
+          
+          // Hide all markers
+          for (var j = 1; j < markers.length; j++)
+          {
+            if (markers[j] != null)
+            {
+              markers[j].setMap(null);
+            }
+            
+          }
+          
+          currentLocale = -1;
+          routesInLocale = [];
+          
+          alert("No matches found");
+        }});
+      });
+    });
+    
+
+
+
   });
   
   // Zoom in on a route when its corresponding button is clicked on

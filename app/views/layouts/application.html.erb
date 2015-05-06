@@ -16,6 +16,12 @@
         <div class="navbar-brand">
           ICS 624 - Tourism Routes
         </div>
+        <form id="search-fields" class="form-inline navbar-form navbar-left">
+          <div class="form-group">
+            <input id="locale" name="locale" class="form-control" type="text" placeholder="Search">
+            <button type="button" id="search-button">Search</button>
+          </div>
+        </form>      
       </div>
     </nav>
   </header>
@@ -27,6 +33,7 @@
       <%= yield %>
     </div>
   </main>
+
   <footer>
     <div><small>Made for ICS 624 in Spring 2015</small></div>
     <div><small><%= "\u00A9 2015 Ling-Chih Yao and Branden Ogata" %></small></div>

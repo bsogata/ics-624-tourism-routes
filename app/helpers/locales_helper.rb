@@ -78,7 +78,7 @@ module LocalesHelper
     
     point_names.each do |p|
       # If a point of interest in the same location exists
-      if Point.exists?(name: p) && Locale.exists(name: location)
+      if Point.exists?(name: p) && Locale.exists?(name: location)
         point_candidates = Point.where(name: p)
         locale = Locale.where(name: location).first
         
@@ -111,7 +111,7 @@ module LocalesHelper
     for i in 1..6
       route = locale.send("route_#{i}")
       
-      if route.points_on_route.include?(point.id.to_s)
+      if !route.nil? && route.points_on_route.include?(point.id.to_s)
         return true
       end
       
@@ -155,7 +155,7 @@ module LocalesHelper
   
   def create_routes(locale, links, points)
     links.each do |l|
-      page = Nokogiri.HTML(open(l))
+      page = Nokogiri.HTML(open(l, 'User-Agent' => 'ruby'))
 
       matches = []
       
@@ -219,7 +219,7 @@ module LocalesHelper
     
       # If there is no route at the given index, create a route and add it at the given index
       if route.nil?
-        route = Route.create(name: "Route", points_on_route: points)
+        route = Route.create(name: "Route #{DateTime.now}", points_on_route: points)
         route.sources.push(Source.create(link: source))
         route.save
         locale.send("route_#{i}=", route)
