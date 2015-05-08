@@ -1,0 +1,8 @@
+<div id="route-name" class="map-data"><%= "#{@route.name}" %></div>
+<div id="route-locale" class="map-data"><%= "#{@route.locale.name}" %></div>
+<div id="route-points" class="map-data"><%= "#{@route.points_on_route}" %></div>
+<div id="source-list">
+  <% @route.sources.each do |s| %>
+    <a href="<%= s.link %>" class="source"><%= s.link %></a>
+  <% end %>
+</div>

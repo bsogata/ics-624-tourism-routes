@@ -1,36 +1,18 @@
-<div id="map-update">
-  <% poi_coordinates = [] %>
-  <% poi_names = [] %>
-  <% route_names = [] %>
-  <% routes = [] %>
-  <% locales = [] %>
-  
-  <% Point.all.each do |p| %>
-    <% unless p.latitude.nil? || p.longitude.nil? || p.name.nil? %>
-      <% poi_coordinates[p.id] = p.gmaps_address %>
-      <% poi_names[p.id] = p.name %>
-    <% end %>
-  <% end %>
-  
-  <% Route.all.each do |r| %>
-    <% unless r.name.nil? || r.points_on_route.nil? %>
-      <% route_names[r.id] = r.name %>
-      <% routes[r.id] = r.to_array %>
-      <% print "#{r.name}: #{routes[r.id]}\n" %>
-    <% end %>
-  <% end %>
-  
-  <% Locale.all.each do |l| %>
-    <% unless l.name.nil? %>
-      <% locales[l.id] = l.name.downcase %>
-    <% end %>
-  <% end %>
-  
-  <%= javascript_tag do %>
-    initializeData(<%= raw poi_coordinates.to_json %>, <%= raw poi_names.to_json %>,
-                   <%= raw route_names.to_json %>, <%= raw routes.to_json %>,
-                   <%= raw locales.to_json %>);
-    setupMarkers();
-    setupRoutes();               
-  <% end %>
-</div>
+<div id="route-1-id"><%= @locale.route_1.id unless @locale.route_1.nil? %></div>
+<div id="route-1-name"><%= @locale.route_1.name unless @locale.route_1.nil? %></div>
+<div id="route-1-points-on-route"><%= @locale.route_1.points_on_route unless @locale.route_1.nil? %></div>
+<div id="route-2-id"><%= @locale.route_2.id unless @locale.route_2.nil? %></div>
+<div id="route-2-name"><%= @locale.route_2.name unless @locale.route_2.nil? %></div>
+<div id="route-2-points-on-route"><%= @locale.route_2.points_on_route unless @locale.route_2.nil? %></div>
+<div id="route-3-id"><%= @locale.route_3.id unless @locale.route_3.nil? %></div>
+<div id="route-3-name"><%= @locale.route_3.name unless @locale.route_3.nil? %></div>
+<div id="route-3-points-on-route"><%= @locale.route_3.points_on_route unless @locale.route_3.nil? %></div>
+<div id="route-4-id"><%= @locale.route_4.id unless @locale.route_4.nil? %></div>
+<div id="route-4-name"><%= @locale.route_4.name unless @locale.route_4.nil? %></div>
+<div id="route-4-points-on-route"><%= @locale.route_4.points_on_route unless @locale.route_4.nil? %></div>
+<div id="route-5-id"><%= @locale.route_5.id unless @locale.route_5.nil? %></div>
+<div id="route-5-name"><%= @locale.route_5.name unless @locale.route_5.nil? %></div>
+<div id="route-5-points-on-route"><%= @locale.route_5.points_on_route unless @locale.route_5.nil? %></div>
+<div id="route-6-id"><%= @locale.route_6.id unless @locale.route_6.nil? %></div>
+<div id="route-6-name"><%= @locale.route_6.name unless @locale.route_6.nil? %></div>
+<div id="route-6-points-on-route"><%= @locale.route_6.points_on_route unless @locale.route_6.nil? %></div>
