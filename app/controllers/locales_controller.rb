@@ -1,13 +1,16 @@
 class LocalesController < ApplicationController
   def map
-    @locale = Locale.find_or_create_by(name: params[:localeName])      
+    print "Locale: #{params[:localeName]}"
+    @locale = Locale.where('lower(name) = ?', params[:localeName].downcase).first_or_create
   end
   
   def poi
-    @locale = Locale.find_or_create_by(name: params[:localeName])      
+    print "Locale: #{params[:localeName]}"
+    @locale = Locale.where('lower(name) = ?', params[:localeName].downcase).first_or_create
   end
   
   def routes
-    @locale = Locale.find_or_create_by(name: params[:localeName])      
+    print "Locale: #{params[:localeName]}"
+    @locale = Locale.where('lower(name) = ?', params[:localeName].downcase).first_or_create
   end
 end

@@ -1,0 +1,8 @@
+<% @route.points_on_route.split(" ").each do |p| %>
+  <% point = Point.find(p.to_i) %>
+  <div class="point">
+    <div class="point-name"><%= point.name %></div>
+    <div class="point-latitude"><%= point.latitude %></div>
+    <div class="point-longitude"><%= point.longitude %></div>
+  </div>
+<% end %>
