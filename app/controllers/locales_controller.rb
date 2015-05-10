@@ -1,4 +1,8 @@
 class LocalesController < ApplicationController
+  def coordinates
+    @locale_name = params[:localeName]
+  end
+  
   def map
     if params[:locale_id].to_i > 0
       @locale = Locale.find(params[:locale_id])

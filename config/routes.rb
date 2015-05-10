@@ -15,6 +15,7 @@ Ics624TourismRoutes::Application.routes.draw do
   #   resources :products
 
   resources :locales do
+    get :coordinates
     get :map
     get :poi
     get :routes

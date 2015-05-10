@@ -1,0 +1,3 @@
+<% coordinates = get_coordinates(@locale_name) %>
+<div id="locale-latitude"><%= coordinates[0].chop %></div>
+<div id="locale-longitude"><%= "-#{coordinates[1].chop}" %></div>

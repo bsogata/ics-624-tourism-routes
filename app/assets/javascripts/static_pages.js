@@ -6,79 +6,16 @@
  */
 
 /**
- * The markers on the map.
+ * The Google Places service.
+ *
+ */
+var service = null;
+
+/**
+ * The array of markers.
  *
  */
 var markers = [];
-
-/**
- * The routes (represented as polylines) on the map.
- *
- */
-var routes = [];
-
-/**
- * The InfoBoxes on the map.
- *
- */
-var infoBoxes = [];
-
-/**
- * The coordinates of the markers on the map.
- *
- */
-var coordinates = [];
-
-/**
- * The names of the markers on the map.
- *
- */
-var names = [];
-
-/**
- * The names of the routes on the map.
- *
- */
-var routeNames = [];
-
-/**
- * The IDs of the points of the routes on the map.
- *
- */
-var routePoints = [];
-
-/**
- * The names of the locales on the map.
- *
- */
-var locales = [];
-
-/**
- * The index of the current locale.
- *
- */
-var currentLocale = -1;
-
-/**
- * Initializes the POI and Route data.
- *
- * Parameters:
- *   coordinates    The array of strings containing the coordinates of the POIs.
- *   names          The array of strings containing the names of the POIs.
- *   routeNames     The array of strings containing the names of the Routes.
- *   routePoints    The array of strings containing the point IDs on the Routes.
- *   locales        The array of strings containing the names of the Locales.
- *   
- */
-
-function initializeData(coordinates, names, routeNames, routePoints, locales)
-{
-  this.coordinates = coordinates;
-  this.names = names;
-  this.routeNames = routeNames;
-  this.routePoints = routePoints;
-  this.locales = locales;
-}
 
 /*
  * Centers the map on the given coordinates.
@@ -105,6 +42,7 @@ function initialize()
   this.map = new google.maps.Map(document.getElementById("map"),
                                  {zoom: 10,
                                   center: new google.maps.LatLng(21.477, -157.967)});
+  this.service = new google.maps.places.PlacesService(this.map);
 }
 
 /*
@@ -241,103 +179,6 @@ function getIconName(routeNumber)
   icon += ".png";
   
   return icon;
-}
-
-/*
- * Shows the InfoBox for the given marker.
- *
- * Parameters:
- *   marker    The marker to display an InfoBox for.
- *   
- */
-
-function showInfoBox(marker)
-{
-  markerId = markers.indexOf(marker);
-  
-  // Get the data for the selected point
-  $.ajax({type: "GET", url: "/points/" + markerId + "/map", success: function(data)
-  {
-    var wrapper = $("<div></div>").html(data);
-    var point_data = "<div>";
-    
-    $(wrapper).find(".map-data").each(function()
-    {
-      point_data += "<p>" + $(this).html() + "</p>";
-    });
-   
-    point_data += "</div>";
-    
-    // Close all other InfoBox instances
-    for (var j = 0; j < infoBoxes.length; j++)
-    {
-      if (infoBoxes[j] !== undefined)
-      {
-        infoBoxes[j].hide();
-      }
-    }
-
-    // Default colors
-    var color = "#FFFFFF";
-    var fontColor = "#000000";
-    
-    switch (marker.getIcon())
-    {
-      case "/assets/circle_marker_red.png":
-        color = getStrokeColor(0);
-        break;
-      case "/assets/circle_marker_orange.png":
-        color = getStrokeColor(1);
-        break;
-      case "/assets/circle_marker_yellow.png":
-        color = getStrokeColor(2);
-        break;
-      case "/assets/circle_marker_green.png":
-        color = getStrokeColor(3);
-        break;
-      case "/assets/circle_marker_blue.png":
-        color = getStrokeColor(4);
-        break;
-      case "/assets/circle_marker_violet.png":
-        color = getStrokeColor(5);
-        break;
-      default:
-        break;
-    }
-    
-    // If an InfoBox for this point does not exist, create and open a new InfoBox
-    if (infoBoxes[markerId] === undefined)
-    {      
-      infoBoxes[markerId] = new InfoBox({content: point_data,
-                                         disableAutoPan: false,
-                                         pixelOffset: new google.maps.Size(-140, 0),
-                                         zIndex: null,
-                                         boxStyle: {background: color,
-                                                    color: fontColor,
-                                                    opacity: 0.90,
-                                                    width: "256px"},
-                                         closeBoxMargin: "2px 2px 2px 2px",
-                                         closeBoxURL: "http://www.google.com/intl/" +
-                                                      "en_us/mapfiles/close.gif",
-                                         infoBoxClearance: new google.maps.Size(1, 1),
-                                         isHidden: false,
-                                         pane: "floatPane",
-                                         enableEventPropagation: false});
-      infoBoxes[markerId].open(map, marker);
-    }
-    
-    // Else open and show the InfoBox (it could be hidden or closed and it is difficult to
-    // determine which is the case)
-    else
-    {      
-      infoBoxes[markerId].setOptions({boxStyle: {background: color,
-                                                 color: fontColor,
-                                                 opacity: 0.90,
-                                                 width: "256px"}});
-      infoBoxes[markerId].open(map, marker);
-      infoBoxes[markerId].show();
-    }
-  }});
 }
 
 /*
@@ -492,6 +333,74 @@ function setupRoutes()
   }
 }
 
+/**
+ * Callback function for the Google Places search.
+ *
+ * Parameters:
+ *   results    The search results.
+ *   status     The status returned from the search.
+ *   
+ */
+
+function callback(results, status) {
+  if (status != google.maps.places.PlacesServiceStatus.OK) {
+    alert(status);
+    return;
+  }
+  for (var i = 0, result; result = results[i]; i++) {
+    createMarker(result);
+  }
+}
+
+/**
+ * Creates markers for the given point of interest.
+ *
+ * Parameters:
+ *   place    The place found through the Google Places API.
+ *
+ */
+
+function createMarker(place) {
+  var marker = new google.maps.Marker({
+    map: map,
+    position: place.geometry.location,
+    icon: "/assets/circle_marker_black.png"
+  });
+  
+  markers.push(marker);
+
+  google.maps.event.addListener(marker, 'click', function() {
+    service.getDetails(place, function(result, status) {
+      if (status != google.maps.places.PlacesServiceStatus.OK) {
+        alert(status);
+        return;
+      }
+
+      // Set all markers to the default icon
+      for (var i = 0; i < this.markers.length; i++)
+      {
+        markers[i].setIcon("/assets/circle_marker_black.png");
+      }
+      
+      centerMap(result.geometry.location.lat(), result.geometry.location.lng());
+      marker.setIcon("/assets/circle_marker_red_filled.png");
+          
+      var header = $("<h3></h3>").text(result.name);
+      var subheader = $("<small></small>").text(" in " + toTitleCase($("#locale").val()));
+      $(header).append(subheader);
+      
+      // Add images of this location
+      var image0 = $("<a></a>").attr("href", "#").attr("class", "thumbnail").text("Image 0");
+      var image1 = $("<a></a>").attr("href", "#").attr("class", "thumbnail").text("Image 1");
+      var image2 = $("<a></a>").attr("href", "#").attr("class", "thumbnail").text("Image 2");
+      var image3 = $("<a></a>").attr("href", "#").attr("class", "thumbnail").text("Image 3");
+      
+      $("#info-panel").empty();
+      $("#info-panel").append(header, image0, image1, image2, image3);
+    });
+  });
+}
+
 $(document).ready(function()
 {  
   // Load the map
@@ -501,134 +410,23 @@ $(document).ready(function()
   // Disable all route buttons
   $(".route-button").prop("disabled", true);  
   
-  // Set up map elements
-  setupMarkers();
-  setupRoutes();
-  
-  // When Search button is clicked on, use AJAX to search for matching locale and display routes
+  // When Search button is clicked on, use Google Places to search for points and routes
   $("#search-button").click(function()
   {
-    currentLocale = locales.indexOf($("#locale").val().toLowerCase());
-    
-    $.ajax({type: "GET", url: "/locales/" + currentLocale + "/poi",
-            data: "localeName=" + $("#locale").val().toLowerCase(), success: function(data)
+    // Move map to the location specified in the text field
+    $.ajax({type: "GET", url: "/locales/0/coordinates", data: "localeName=" + $("#locale").val(),
+            success: function(data)
     {
       var wrapper = $("<div></div>").html(data);
+      var latitude = parseFloat($(wrapper).find("#locale-latitude").text());
+      var longitude = parseFloat($(wrapper).find("#locale-longitude").text());
       
-      $("#info-panel").empty();
-      $("#info-panel").append($("<h3></h3>").text(toTitleCase($("#locale").val())));
+      centerMap(latitude, longitude);
+      map.setZoom(10);
       
-      $(wrapper).find(".poi").each(function()
-      {
-        $("#info-panel").append(this);
-      });
-    }}).done(function()
-    {
-      $.ajax({type: "GET", url: "/locales/" + currentLocale + "/routes",
-              data: "localeName=" + $("#locale").val().toLowerCase(), success: function(data)
-      {
-        var wrapper = $("<div></div>").html(data);
-        $("body").append($(wrapper).find("#map-update"));
-      }, error: function()
-      {
-        alert("Attempt to update routes for " + $("#locale").val() + " failed");
-      }}).done(function()
-      {
-        $.ajax({type: "GET", url: "/locales/" + currentLocale + "/map",
-                data: "localeName=" + $("#locale").val().toLowerCase(), success: function(data)
-        {
-          var wrapper = $("<div></div>").html(data);
-          var markerBounds = new google.maps.LatLngBounds();
-          routesInLocale = [];
-      
-          $(wrapper).find(".route-data").each(function()
-          {
-            routesInLocale.push($(this).text());
-          });
-          
-          // Hide all routes
-          for (var i = 1; i < routes.length; i++)
-          {
-            if (routes[i] != null)
-            {
-              routes[i].setMap(null);
-            }
-          }
-          
-          // Hide all markers
-          for (var j = 1; j < markers.length; j++)
-          {
-            if (markers[j] != null)
-            {
-              markers[j].setMap(null);
-            }
-          }
-          
-          // Show the routes and markers for the routes in routesInLocale
-          for (var k = 0; k < routesInLocale.length; k++)
-          {
-            if ((routesInLocale[k] != "") && (routesInLocale[k] != null) &&
-                (routes[routesInLocale[k]] != null))
-            {
-              // Show route on the map with the correct color
-              routes[routesInLocale[k]].strokeColor = getStrokeColor(k);
-              routes[routesInLocale[k]].setMap(map);
-               
-              $("#route-" + (k+1) + "-button").prop("disabled", false); 
-               
-              // Show markers on the map with the correct color         
-              for (var m = 0; m < routePoints[routesInLocale[k]].length; m++)
-              {
-                // Only if the icon is not already visible
-                if (markers[routePoints[routesInLocale[k]][m]].getMap() != map)
-                {
-                  markers[routePoints[routesInLocale[k]][m]].setIcon({url: getIconName(k),
-                                                                      anchor: new google.maps.Point(8, 8)});
-                  markers[routePoints[routesInLocale[k]][m]].setMap(map);
-                  
-                  // Add this point to the bounds to display
-                  latitude = coordinates[routePoints[routesInLocale[k]][m]].split(" ")[0];
-                  longitude = coordinates[routePoints[routesInLocale[k]][m]].split(" ")[1];
-                  markerBounds.extend(new google.maps.LatLng(latitude, longitude));
-                }
-              }
-            }
-          }
-          
-          map.fitBounds(markerBounds);
-        },
-        error: function()
-        {
-          // Hide all routes
-          for (var i = 1; i < routes.length; i++)
-          {
-            if (routes[i] != null)
-            {
-              routes[i].setMap(null);
-            }
-          }
-          
-          // Hide all markers
-          for (var j = 1; j < markers.length; j++)
-          {
-            if (markers[j] != null)
-            {
-              markers[j].setMap(null);
-            }
-            
-          }
-          
-          currentLocale = -1;
-          routesInLocale = [];
-          
-          alert("No matches found");
-        }});
-      });
-    });
-    
-
-
-
+      // Display search results
+      service.radarSearch({bounds: map.getBounds(), keyword: "tourist"}, callback);    
+    }});
   });
   
   // Zoom in on a route when its corresponding button is clicked on
