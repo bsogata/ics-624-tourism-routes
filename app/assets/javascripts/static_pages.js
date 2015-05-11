@@ -206,57 +206,6 @@ function toTitleCase(text)
   return titleCase;
 }
 
-/*
- * Sets up the markers on the map.
- * 
- */
-
-function setupMarkers()
-{
-  markers = [];
-  
-  for (var i = 1; i < names.length; i++)
-  {
-    console.log("Setting up marker " + i);
-    
-    if (coordinates[i] != null)
-    {
-      var latitude = coordinates[i].split(" ")[0];
-      var longitude = coordinates[i].split(" ")[1];
-      var name = names[i];
-      
-      if ((latitude != "") && (longitude != ""))
-      {
-        var marker = new google.maps.Marker({
-                                              position: new google.maps.LatLng(latitude, longitude),
-                                              title: name
-                                            });
-        
-        // When clicked on, center the map on the marker and update the marker info in the side panel
-        google.maps.event.addListener(marker, 'click', function()
-        {
-          centerMap(this.position.lat(), this.position.lng());
-          
-          var header = $("<h3></h3>").text(names[markers.indexOf(this)]);
-          var subheader = $("<small></small>").text(" in " + locales[currentLocale]);
-          $(header).append(subheader);
-          
-          // Add images of this location
-          var image0 = $("<a></a>").attr("href", "#").attr("class", "thumbnail").text("Image 0");
-          var image1 = $("<a></a>").attr("href", "#").attr("class", "thumbnail").text("Image 1");
-          var image2 = $("<a></a>").attr("href", "#").attr("class", "thumbnail").text("Image 2");
-          var image3 = $("<a></a>").attr("href", "#").attr("class", "thumbnail").text("Image 3");
-          
-          $("#info-panel").empty();
-          $("#info-panel").append(header, image0, image1, image2, image3);
-        });
-        
-        markers[i] = marker;      
-      }
-    }
-  }
-}
-
 /**
  * Sets up routes on the map.
  * 
@@ -264,73 +213,62 @@ function setupMarkers()
 
 function setupRoutes()
 {
-  routes = [];
+  // Get the routes for the marker names in the current locale
+  var locale = $("#locale").val();
+  var markerNames = [];
   
-  for (var j = 1; j < routeNames.length; j++)
+  for (var i = 0; i < markers.length; i++)
   {
-    if (routeNames[j] != null)
-    {
-      var pointsOnRoute = [];
-      
-      for (var k = 0; k < routePoints[j].length; k++)
-      {
-        var pointID = parseInt(routePoints[j][k]);
-        
-        if ((0 < pointID) && (pointID < markers.length) && (coordinates[pointID] != null))
-        {
-          pointsOnRoute.push(new google.maps.LatLng(coordinates[pointID].split(" ")[0],
-                                                    coordinates[pointID].split(" ")[1]));
-        }
-      }
-      
-      var route = new google.maps.Polyline({
-                                             path: pointsOnRoute,
-                                             geodesic: true,
-                                             strokeColor: "#000000",
-                                             strokeOpacity: 1.0,
-                                             strokeWeight: 4
-                                           });
-      
-      routes[j] = route;
-  
-      // When clicked on, center the map on the route and update the route info in the right panel
-      google.maps.event.addListener(route, 'click', function()
-      {
-        var id = routes.indexOf(this);
-        var route = this;
-        var markerBounds = new google.maps.LatLngBounds();
-        
-        // Add all markers in the route to the bounds to zoom to
-        for (var i = 0; i < routePoints[id].length; i++)
-        {
-          latitude = coordinates[routePoints[id][i]].split(" ")[0];
-          longitude = coordinates[routePoints[id][i]].split(" ")[1];
-          markerBounds.extend(new google.maps.LatLng(latitude, longitude));
-        }
-        
-        map.fitBounds(markerBounds);
-        
-        var header = $("<h3></h3>").text("Route " + routeNames[id]);
-        var subheader = $("<small></small>").text(" in " + locales[currentLocale]);
-        $(header).append(subheader);
-        
-        // Add links to the blogs detailing this route
-        var linkList = $("<ul></ul>");
-        $.ajax({type: "GET", url: "/routes/" + id + "/sources", success: function(data)
-        {
-          var wrapper = $("<div></div>").html(data);
-          
-          $(wrapper).find(".source").each(function()
-          {
-            $(linkList).append($("<li></li>").append(this));
-          });
-        }});
-        
-        $("#info-panel").empty();
-        $("#info-panel").append(header, linkList);
-      });
-    }
+    markerNames.push(markers[i].name);
   }
+  
+        
+  var route = new google.maps.Polyline({
+                                         path: pointsOnRoute,
+                                         geodesic: true,
+                                         strokeColor: "#000000",
+                                         strokeOpacity: 1.0,
+                                         strokeWeight: 4
+                                       });
+  
+  routes[j] = route;
+
+  // When clicked on, center the map on the route and update the route info in the right panel
+  google.maps.event.addListener(route, 'click', function()
+  {
+    var id = routes.indexOf(this);
+    var route = this;
+    var markerBounds = new google.maps.LatLngBounds();
+    
+    // Add all markers in the route to the bounds to zoom to
+    for (var i = 0; i < routePoints[id].length; i++)
+    {
+      latitude = coordinates[routePoints[id][i]].split(" ")[0];
+      longitude = coordinates[routePoints[id][i]].split(" ")[1];
+      markerBounds.extend(new google.maps.LatLng(latitude, longitude));
+    }
+    
+    map.fitBounds(markerBounds);
+    
+    var header = $("<h3></h3>").text("Route " + routeNames[id]);
+    var subheader = $("<small></small>").text(" in " + locales[currentLocale]);
+    $(header).append(subheader);
+    
+    // Add links to the blogs detailing this route
+    var linkList = $("<ul></ul>");
+    $.ajax({type: "GET", url: "/routes/" + id + "/sources", success: function(data)
+    {
+      var wrapper = $("<div></div>").html(data);
+      
+      $(wrapper).find(".source").each(function()
+      {
+        $(linkList).append($("<li></li>").append(this));
+      });
+    }});
+    
+    $("#info-panel").empty();
+    $("#info-panel").append(header, linkList);
+  });
 }
 
 /**
@@ -362,16 +300,20 @@ function callback(results, status) {
 
 function createMarker(place) {
   var marker = new google.maps.Marker({
+    icon: "/assets/circle_marker_black.png",
     map: map,
     position: place.geometry.location,
-    icon: "/assets/circle_marker_black.png"
+    title: place.name
   });
   
   markers.push(marker);
-
-  google.maps.event.addListener(marker, 'click', function() {
-    service.getDetails(place, function(result, status) {
-      if (status != google.maps.places.PlacesServiceStatus.OK) {
+  
+  google.maps.event.addListener(marker, 'click', function()
+  {
+    service.getDetails(place, function(result, status)
+    {
+      if (status != google.maps.places.PlacesServiceStatus.OK)
+      {
         alert(status);
         return;
       }
@@ -386,8 +328,7 @@ function createMarker(place) {
       marker.setIcon("/assets/circle_marker_red_filled.png");
           
       var header = $("<h3></h3>").text(result.name);
-      var subheader = $("<small></small>").text(" in " + toTitleCase($("#locale").val()));
-      $(header).append(subheader);
+      var subheader = $("<small></small>").text(result.vicinity);
       
       // Add images of this location
       var image0 = $("<a></a>").attr("href", "#").attr("class", "thumbnail").text("Image 0");
@@ -396,7 +337,7 @@ function createMarker(place) {
       var image3 = $("<a></a>").attr("href", "#").attr("class", "thumbnail").text("Image 3");
       
       $("#info-panel").empty();
-      $("#info-panel").append(header, image0, image1, image2, image3);
+      $("#info-panel").append(header, subheader, image0, image1, image2, image3);
     });
   });
 }
@@ -425,7 +366,7 @@ $(document).ready(function()
       map.setZoom(10);
       
       // Display search results
-      service.radarSearch({bounds: map.getBounds(), keyword: "tourist"}, callback);    
+      service.nearbySearch({bounds: map.getBounds()}, callback);    
     }});
   });
   
