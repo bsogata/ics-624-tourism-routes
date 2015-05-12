@@ -1,0 +1,14 @@
+<% blogs =  get_blogs_in_locale(@locale.name) %>
+<% blogs.each do |b| %>
+  <div class="blog-link"><%= b %></div>  
+<% end %>
+<% routes = create_routes_from_blogs(@locale, blogs, @point_names) %>
+<% routes.each do |r| %>
+  <div class="route">
+    <div class="name"><%= r.name %></div>
+    <div class="points"><%= r.points_on_route %></div>
+    <% r.sources.each do |s| %>
+      <div class="source"><%= s.link %></div>
+    <% end %>
+  </div>
+<% end %>

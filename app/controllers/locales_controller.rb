@@ -17,6 +17,12 @@ class LocalesController < ApplicationController
     else
       @locale = Locale.find_or_create_by(name: params[:localeName])
     end
+    
+    @point_names = [];
+    
+    params[:markerNames].split(",").each do |m|
+      @point_names.push m
+    end
   end
   
   def routes

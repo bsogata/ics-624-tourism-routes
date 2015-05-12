@@ -22,6 +22,7 @@ Ics624TourismRoutes::Application.routes.draw do
   end
   
   resources :routes do
+    get :blogs
     get :map
     get :sources
   end

@@ -17,6 +17,12 @@ var service = null;
  */
 var markers = [];
 
+/**
+ * The array of routes.
+ * 
+ */
+var routes = [];
+
 /*
  * Centers the map on the given coordinates.
  *
@@ -217,58 +223,113 @@ function setupRoutes()
   var locale = $("#locale").val();
   var markerNames = [];
   
-  for (var i = 0; i < markers.length; i++)
+  // markers[0] appears to contain the region of the current locale and is ignored here
+  for (var i = 1; i < markers.length; i++)
   {
-    markerNames.push(markers[i].name);
+    markerNames.push(markers[i].title.replace("&", "and"));
   }
   
-        
-  var route = new google.maps.Polyline({
-                                         path: pointsOnRoute,
-                                         geodesic: true,
-                                         strokeColor: "#000000",
-                                         strokeOpacity: 1.0,
-                                         strokeWeight: 4
-                                       });
-  
-  routes[j] = route;
-
-  // When clicked on, center the map on the route and update the route info in the right panel
-  google.maps.event.addListener(route, 'click', function()
+  // Send the names to the server through AJAX
+  $.ajax({type: "GET", url: "/locales/0/poi",
+          data: "localeName=" + $("#locale").val() + "&markerNames=" + markerNames,
+          success: function(data)
   {
-    var id = routes.indexOf(this);
-    var route = this;
-    var markerBounds = new google.maps.LatLngBounds();
+    var wrapper = $("<div></div>").html(data);
     
-    // Add all markers in the route to the bounds to zoom to
-    for (var i = 0; i < routePoints[id].length; i++)
-    {
-      latitude = coordinates[routePoints[id][i]].split(" ")[0];
-      longitude = coordinates[routePoints[id][i]].split(" ")[1];
-      markerBounds.extend(new google.maps.LatLng(latitude, longitude));
-    }
-    
-    map.fitBounds(markerBounds);
-    
-    var header = $("<h3></h3>").text("Route " + routeNames[id]);
-    var subheader = $("<small></small>").text(" in " + locales[currentLocale]);
-    $(header).append(subheader);
-    
-    // Add links to the blogs detailing this route
-    var linkList = $("<ul></ul>");
-    $.ajax({type: "GET", url: "/routes/" + id + "/sources", success: function(data)
+    // Display the names of the points of interest
+    $("#info-panel").append($(wrapper).find("#poi"));
+  }}).done(function()
+  {
+    $.ajax({type: "GET", url: "/routes/0/blogs",
+            data: "localeName=" + $("#locale").val() + "&markerNames=" + markerNames,
+            success: function(data)
     {
       var wrapper = $("<div></div>").html(data);
-      
-      $(wrapper).find(".source").each(function()
+
+      // Make the routes
+      $(wrapper).find(".route").each(function()
       {
-        $(linkList).append($("<li></li>").append(this));
+        var name = $(this).find(".name").text();
+        var points = $(this).find(".points").text();
+        var sources = [];
+        
+        $(this).find(".source").each(function()
+        {
+          sources.push($(this).text());
+        });
+        
+        console.log("Name: " + name);
+        console.log("Points: " + points);
+        console.log("Sources: " + sources);
+        
+        var markersOnRoute = [];
+        
+        for (var j = 0; j < points.split(" ").length; j++)
+        {
+          markersOnRoute.push(markers[parseInt(points.split(" ")[j])].position);
+        }
+        
+        var route = new google.maps.Polyline({
+          map: map,
+          path: markersOnRoute,
+          geodesic: true,
+          strokeColor: "#FF0000",
+          strokeOpacity: 1.0,
+          strokeWeight: 4
+        })
+        
+        routes.push(route);
       });
-    }});
-    
-    $("#info-panel").empty();
-    $("#info-panel").append(header, linkList);
+    }});  
   });
+  
+  
+  //var route = new google.maps.Polyline({
+  //                                       path: pointsOnRoute,
+  //                                       geodesic: true,
+  //                                       strokeColor: "#000000",
+  //                                       strokeOpacity: 1.0,
+  //                                       strokeWeight: 4
+  //                                     });
+  //
+  //routes[j] = route;
+  //
+  //// When clicked on, center the map on the route and update the route info in the right panel
+  //google.maps.event.addListener(route, 'click', function()
+  //{
+  //  var id = routes.indexOf(this);
+  //  var route = this;
+  //  var markerBounds = new google.maps.LatLngBounds();
+  //  
+  //  // Add all markers in the route to the bounds to zoom to
+  //  for (var i = 0; i < routePoints[id].length; i++)
+  //  {
+  //    latitude = coordinates[routePoints[id][i]].split(" ")[0];
+  //    longitude = coordinates[routePoints[id][i]].split(" ")[1];
+  //    markerBounds.extend(new google.maps.LatLng(latitude, longitude));
+  //  }
+  //  
+  //  map.fitBounds(markerBounds);
+  //  
+  //  var header = $("<h3></h3>").text("Route " + routeNames[id]);
+  //  var subheader = $("<small></small>").text(" in " + locales[currentLocale]);
+  //  $(header).append(subheader);
+  //  
+  //  // Add links to the blogs detailing this route
+  //  var linkList = $("<ul></ul>");
+  //  $.ajax({type: "GET", url: "/routes/" + id + "/sources", success: function(data)
+  //  {
+  //    var wrapper = $("<div></div>").html(data);
+  //    
+  //    $(wrapper).find(".source").each(function()
+  //    {
+  //      $(linkList).append($("<li></li>").append(this));
+  //    });
+  //  }});
+  //  
+  //  $("#info-panel").empty();
+  //  $("#info-panel").append(header, linkList);
+  //});
 }
 
 /**
@@ -280,14 +341,34 @@ function setupRoutes()
  *   
  */
 
-function callback(results, status) {
-  if (status != google.maps.places.PlacesServiceStatus.OK) {
+function callback(results, status)
+{
+  if (status != google.maps.places.PlacesServiceStatus.OK)
+  {
     alert(status);
     return;
   }
-  for (var i = 0, result; result = results[i]; i++) {
-    createMarker(result);
+
+  // Clear all existing markers and routes
+  for (var i = 0; i < markers.length; i++)
+  {
+    markers[i].setMap(null);
   }
+  
+  for (var j = 0; j < routes.length; j++)
+  {
+    routes[j].setMap(null);
+  }
+  
+  markers.length = 0;
+  routes.length = 0;
+  
+  for (var k = 0; k < results.length; k++)
+  {
+    createMarker(results[k]);
+  }
+  
+  setupRoutes();
 }
 
 /**
@@ -298,7 +379,8 @@ function callback(results, status) {
  *
  */
 
-function createMarker(place) {
+function createMarker(place)
+{
   var marker = new google.maps.Marker({
     icon: "/assets/circle_marker_black.png",
     map: map,
@@ -326,7 +408,7 @@ function createMarker(place) {
       
       centerMap(result.geometry.location.lat(), result.geometry.location.lng());
       marker.setIcon("/assets/circle_marker_red_filled.png");
-          
+      
       var header = $("<h3></h3>").text(result.name);
       var subheader = $("<small></small>").text(result.vicinity);
       
@@ -364,6 +446,11 @@ $(document).ready(function()
       
       centerMap(latitude, longitude);
       map.setZoom(10);
+      
+      // Set up header in info panel
+      $("#info-panel").empty();
+      var header = $("<h3></h3>").text(toTitleCase($("#locale").val()));
+      $("#info-panel").append(header);
       
       // Display search results
       service.nearbySearch({bounds: map.getBounds()}, callback);    

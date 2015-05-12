@@ -1,5 +1,6 @@
 <div id="poi">
-  <% get_points_of_interest(@locale.name).each do |poi| %>
+  <% @point_names.each do |poi| %>
     <div class="poi"><%= poi %></div>
   <% end %>
 </div>
+

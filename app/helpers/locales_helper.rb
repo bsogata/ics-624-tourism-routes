@@ -150,17 +150,22 @@ module LocalesHelper
   # Parameters:
   #   locale    The Locale to create routes for.
   #   links     The array of strings containing the links to search for routes in.
-  #   points    The array of Points in the locale.
+  #   points    The array of point names in the locale.
+  #
+  # Return:
+  #   routes    The array of routes created for this Locale.
   #
   
   def create_routes(locale, links, points)
+    routes = []
+    
     links.each do |l|
       page = Nokogiri.HTML(open(l, 'User-Agent' => 'ruby'))
 
       matches = []
       
       points.each do |p|
-        if page.content.include?(p.name)
+        if page.content.include?(p)
 #          print "#{l} contains #{p.name}\n" 
           matches.push PointIndexPair.new(p, page.content.index(p.name))
         end
@@ -181,7 +186,10 @@ module LocalesHelper
       
       print "Route: #{route_string}\n"
 
-      add_route_to_locale(locale, l, route_string) unless route_string.empty?
+      unless route_string.empty?
+        add_route_to_locale(locale, l, route_string)
+        routes.push Route.last
+      end
     end
   end
   
@@ -234,9 +242,45 @@ module LocalesHelper
   end
   
   #
-  # A class representing where the Point was found in a particular web page.
+  # Returns the blogs for a particular locale.
   #
-  # This is essentially a pairing of Point instances and an integer equal to the index where
+  # Parameters:
+  #   locale    The string containing the name of the locale to find blogs for.
+  #
+  # Return:
+  #   An array of strings containing links to blogs covering the given locale.
+  #
+  
+  def get_locale_blogs(locale)
+    blog_links = []
+    
+    print "Scraping blogs from #{"http://www.bing.com/search?q=#{to_uri_format(locale)}"}+travel+blogs\n"
+    
+    blog_page = Nokogiri.HTML(open("http://www.bing.com/search?q=#{to_uri_format(locale)}+travel+blogs"))
+    
+    blog_page.css("ol#b_results > li > h2 > a").each do |a|
+      if a['href'].start_with?("http") && !blog_links.include?(a['href'])
+        blog_links.push a['href']
+      end
+    end
+
+    print "Scraping blogs from #{"http://www.bing.com/search?q=#{to_uri_format(locale)}"}+travel+blogs&first=9\n"
+    
+    blog_page = Nokogiri.HTML(open("http://www.bing.com/search?q=#{to_uri_format(locale)}+travel+blogs&first=9"))
+    
+    blog_page.css("ol#b_results > li > h2 > a").each do |a|
+      if a['href'].start_with?("http")
+        blog_links.push a['href']
+      end
+    end
+    
+    return blog_links
+  end
+  
+  #
+  # A class representing where the point was found in a particular web page.
+  #
+  # This is essentially a pairing of point indices and an integer equal to the index where
   # the name of the Point was found in the current page.
   #
   
