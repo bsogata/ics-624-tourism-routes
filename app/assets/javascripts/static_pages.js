@@ -362,7 +362,8 @@ function callback(results, status)
 function createMarker(place)
 {
   var marker = new google.maps.Marker({
-    icon: "/assets/circle_marker_black.png",
+    icon: {url: "/assets/circle_marker_black.png",
+           anchor: new google.maps.Point(8, 8)},
     map: map,
     position: place.geometry.location,
     title: place.name
