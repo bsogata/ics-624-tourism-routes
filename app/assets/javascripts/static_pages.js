@@ -273,7 +273,7 @@ function setupRoutes()
           map: map,
           path: markersOnRoute,
           geodesic: true,
-          strokeColor: "#FF0000",
+          strokeColor: getStrokeColor(routes.length % 6),
           strokeOpacity: 1.0,
           strokeWeight: 4
         })
@@ -282,54 +282,6 @@ function setupRoutes()
       });
     }});  
   });
-  
-  
-  //var route = new google.maps.Polyline({
-  //                                       path: pointsOnRoute,
-  //                                       geodesic: true,
-  //                                       strokeColor: "#000000",
-  //                                       strokeOpacity: 1.0,
-  //                                       strokeWeight: 4
-  //                                     });
-  //
-  //routes[j] = route;
-  //
-  //// When clicked on, center the map on the route and update the route info in the right panel
-  //google.maps.event.addListener(route, 'click', function()
-  //{
-  //  var id = routes.indexOf(this);
-  //  var route = this;
-  //  var markerBounds = new google.maps.LatLngBounds();
-  //  
-  //  // Add all markers in the route to the bounds to zoom to
-  //  for (var i = 0; i < routePoints[id].length; i++)
-  //  {
-  //    latitude = coordinates[routePoints[id][i]].split(" ")[0];
-  //    longitude = coordinates[routePoints[id][i]].split(" ")[1];
-  //    markerBounds.extend(new google.maps.LatLng(latitude, longitude));
-  //  }
-  //  
-  //  map.fitBounds(markerBounds);
-  //  
-  //  var header = $("<h3></h3>").text("Route " + routeNames[id]);
-  //  var subheader = $("<small></small>").text(" in " + locales[currentLocale]);
-  //  $(header).append(subheader);
-  //  
-  //  // Add links to the blogs detailing this route
-  //  var linkList = $("<ul></ul>");
-  //  $.ajax({type: "GET", url: "/routes/" + id + "/sources", success: function(data)
-  //  {
-  //    var wrapper = $("<div></div>").html(data);
-  //    
-  //    $(wrapper).find(".source").each(function()
-  //    {
-  //      $(linkList).append($("<li></li>").append(this));
-  //    });
-  //  }});
-  //  
-  //  $("#info-panel").empty();
-  //  $("#info-panel").append(header, linkList);
-  //});
 }
 
 /**
@@ -411,15 +363,47 @@ function createMarker(place)
       
       var header = $("<h3></h3>").text(result.name);
       var subheader = $("<small></small>").text(result.vicinity);
+            
+      $("#info-panel").empty();
+      $("#info-panel").append(header, subheader);
       
       // Add images of this location
-      var image0 = $("<a></a>").attr("href", "#").attr("class", "thumbnail").text("Image 0");
-      var image1 = $("<a></a>").attr("href", "#").attr("class", "thumbnail").text("Image 1");
-      var image2 = $("<a></a>").attr("href", "#").attr("class", "thumbnail").text("Image 2");
-      var image3 = $("<a></a>").attr("href", "#").attr("class", "thumbnail").text("Image 3");
+      if (result.photos !== undefined)
+      {
+        if (result.photos[0] !== undefined)
+        {
+          var imagePath = result.photos[0].getUrl({'maxWidth': $("#info-panel").width()});
+          var imageLink = $("<a></a>").attr("href", imagePath).attr("class", "thumbnail");
+          var image = $("<img></img>").attr("src", imagePath);
+          $(imageLink).append(image);
+          $("#info-panel").append(imageLink);
+        }
+        
+        if (result.photos[1] !== undefined)
+        {
+          var imagePath = result.photos[1].getUrl({'maxWidth': $("#info-panel").width()});
+          var imageLink = $("<a></a>").attr("href", imagePath).attr("class", "thumbnail");
+          var image = $("<img></img>").attr("src", imagePath);
+          $(imageLink).append(image);
+          $("#info-panel").append(imageLink);        }
+  
+        if (result.photos[2] !== undefined)
+        {
+          var imagePath = result.photos[2].getUrl({'maxWidth': $("#info-panel").width()});
+          var imageLink = $("<a></a>").attr("href", imagePath).attr("class", "thumbnail");
+          var image = $("<img></img>").attr("src", imagePath);
+          $(imageLink).append(image);
+          $("#info-panel").append(imageLink);        }
+  
+        if (result.photos[3] !== undefined)
+        {
+          var imagePath = result.photos[3].getUrl({'maxWidth': $("#info-panel").width()});
+          var imageLink = $("<a></a>").attr("href", imagePath).attr("class", "thumbnail");
+          var image = $("<img></img>").attr("src", imagePath);
+          $(imageLink).append(image);
+          $("#info-panel").append(imageLink);        }
+      }
       
-      $("#info-panel").empty();
-      $("#info-panel").append(header, subheader, image0, image1, image2, image3);
     });
   });
 }
