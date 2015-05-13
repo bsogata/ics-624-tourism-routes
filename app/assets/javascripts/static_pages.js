@@ -273,12 +273,40 @@ function setupRoutes()
           map: map,
           path: markersOnRoute,
           geodesic: true,
+          sources: sources,
           strokeColor: getStrokeColor(routes.length % 6),
           strokeOpacity: 1.0,
-          strokeWeight: 4
+          strokeWeight: 4,
+          title: name
         })
         
         routes.push(route);
+        
+        // When clicked on, center the map on the route and update the route info in the right panel
+        google.maps.event.addListener(route, 'click', function()
+        {
+          var markerBounds = new google.maps.LatLngBounds();
+          
+          for (var i = 0; i < this.getPath().getLength(); i++)
+          {
+            markerBounds.extend(this.getPath().getAt(i));
+          }
+          
+          map.fitBounds(markerBounds);
+          
+          var header = $("<h3></h3>").text(this.title);
+            
+          var linkList = $("<ul></ul>");
+          
+          for (var j = 0; j < this.sources.length; j++)
+          {
+            $(linkList).append($("<li></li>").append($("<a></a>").attr("href", this.sources[j])
+                                                                 .text(this.sources[j])));
+          }
+
+          $("#info-panel").empty();
+          $("#info-panel").append(header, linkList);          
+        });
       });
     }});  
   });
