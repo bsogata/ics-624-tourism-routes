@@ -258,10 +258,6 @@ function setupRoutes()
           sources.push($(this).text());
         });
         
-        console.log("Name: " + name);
-        console.log("Points: " + points);
-        console.log("Sources: " + sources);
-        
         var markersOnRoute = [];
         
         for (var j = 0; j < points.split(" ").length; j++)

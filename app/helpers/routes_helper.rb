@@ -90,6 +90,7 @@ module RoutesHelper
             routes.push Route.create(name: "Route #{route_string.gsub(" ", "")} in #{locale.name}",
                                      points_on_route: route_string)
             routes.last.sources.push(Source.create(link: l))
+            add_route_to_locale(locale, routes.last)
           # Else add another source to the existing route  
           else
             routes[existing_index].sources.push(Source.create(link: l))
@@ -101,6 +102,27 @@ module RoutesHelper
     end
     
     return routes
+  end
+  
+  #
+  # Adds the given route to the given locale if possible.
+  #
+  # Parameters:
+  #   locale    The Locale to attempt to add the route to.
+  #   route     The Route to attempt to add to the locale.
+  #
+  
+  def add_route_to_locale(locale, route)
+    for i in 1..6
+      existing = locale.send("route_#{i}")
+    
+      # If there is no route at the given index, create a route and add it at the given index
+      if existing.nil?
+        locale.send("route_#{i}=", route)
+        locale.save
+        break
+      end
+    end    
   end
   
   #

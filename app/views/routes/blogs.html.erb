@@ -1,14 +1,31 @@
-<% blogs =  get_blogs_in_locale(@locale.name) %>
-<% blogs.each do |b| %>
-  <div class="blog-link"><%= b %></div>  
-<% end %>
-<% routes = create_routes_from_blogs(@locale, blogs, @point_names) %>
-<% routes.each do |r| %>
-  <div class="route">
-    <div class="name"><%= r.name %></div>
-    <div class="points"><%= r.points_on_route %></div>
-    <% r.sources.each do |s| %>
-      <div class="source"><%= s.link %></div>
+<!-- If the locale does not have at least one route, scrape for blogs and routes -->
+<% if @locale.route_1.nil? %>
+  <% blogs = get_blogs_in_locale(@locale.name) %>
+  <% blogs.each do |b| %>
+    <div class="blog-link"><%= b %></div>  
+  <% end %>
+  <% routes = create_routes_from_blogs(@locale, blogs, @point_names) %>
+  <% routes.each do |r| %>
+    <div class="route">
+      <div class="name"><%= r.name %></div>
+      <div class="points"><%= r.points_on_route %></div>
+      <% r.sources.each do |s| %>
+        <div class="source"><%= s.link %></div>
+      <% end %>
+    </div>
+  <% end %>
+<!-- Else use the existing routes in the database for the current locale -->
+<% else %>
+  <% for i in 1..6 %>
+    <% route = @locale.send("route_#{i}") %>
+    <% unless route.nil? %>
+      <div class="route">
+        <div class="name"><%= route.name %></div>
+        <div class="points"><%= route.points_on_route %></div>
+        <% route.sources.each do |s| %>
+          <div class="source"><%= s.link %></div>
+        <% end %>
+      </div>
     <% end %>
-  </div>
+  <% end %>
 <% end %>
