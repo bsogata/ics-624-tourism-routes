@@ -240,6 +240,18 @@ function setupRoutes()
     $("#info-panel").append($(wrapper).find("#poi"));
   }}).done(function()
   {
+    // Show progress bar
+    var progress = $("<div></div>").attr("class", "progress");
+    var progressBar = $("<div></div>").attr("class", "progress-bar progress-bar-striped active")
+                                      .attr("role", "progressbar")
+                                      .attr("aria-valuenow", "100")
+                                      .attr("aria-valuemin", "0")
+                                      .attr("aria-valuemax", "100")
+                                      .attr("style", "width: 100%")
+                                      .text("Creating Routes");
+    $(progress).append(progressBar);
+    $("#map-panel").prepend(progress);
+    
     $.ajax({type: "GET", url: "/routes/0/blogs",
             data: "localeName=" + $("#locale").val() + "&markerNames=" + markerNames,
             success: function(data)
@@ -304,7 +316,11 @@ function setupRoutes()
           $("#info-panel").append(header, linkList);          
         });
       });
-    }});  
+    }}).done(function()
+    {
+      $(progress).hide();
+    });
+    
   });
 }
 
