@@ -136,7 +136,7 @@ module LocalesHelper
     coordinates = []
     
     page.css("ol#b_results > li.b_ans > ul.b_vList > li > div.b_focusTextMedium").each do |text|
-      coordinates = text.content.gsub(" ", "").gsub(/[NW]/, "").split(",")
+      coordinates = text.content.gsub(" ", "").split(",")
     end
     
     print "Coordinates for #{point_name}: #{coordinates}\n"
