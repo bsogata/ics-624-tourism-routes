@@ -51,48 +51,52 @@ module RoutesHelper
     routes = []
     
     links.each do |l|
-      page = Nokogiri.HTML(open(l, 'User-Agent' => 'ruby'))
-
-      matches = []
-      
-      points.each do |p|
-        if page.content.include?(p)
-#          print "#{l} contains #{p.name}\n" 
-          matches.push PointIndexPair.new(points.index(p), page.content.index(p))
-        end
-      end
-      
-      # Sort the matching points by index so that we get the order for the route
-      matches.sort_by{|m| m.index}
-      
-      # If the route does not already exist in this Locale, create the route
-      route_string = ""
-      print "Route: "
-      matches.each do |m|
-        route_string += "#{m.point} "
-        print "#{points[m.point]} "
-      end
-      print "\n"
-      route_string.strip!
-      
-      print "Route: #{route_string}\n"
-
-      unless route_string.empty?
-        existing_index = -1
+      begin
+        page = Nokogiri.HTML(open(l, 'User-Agent' => 'ruby'))
+  
+        matches = []
         
-        routes.each do |r|
-          existing_index = routes.index(r) if r.points_on_route == route_string
+        points.each do |p|
+          if page.content.include?(p)
+  #          print "#{l} contains #{p.name}\n" 
+            matches.push PointIndexPair.new(points.index(p), page.content.index(p))
+          end
         end
         
-        # If the route is not present, create a new route
-        if existing_index == -1
-          routes.push Route.create(name: "Route #{route_string.gsub(" ", "")} in #{locale.name}",
-                                   points_on_route: route_string)
-          routes.last.sources.push(Source.create(link: l))
-        # Else add another source to the existing route  
-        else
-          routes[existing_index].sources.push(Source.create(link: l))
-        end   
+        # Sort the matching points by index so that we get the order for the route
+        matches.sort_by{|m| m.index}
+        
+        # If the route does not already exist in this Locale, create the route
+        route_string = ""
+        print "Route: "
+        matches.each do |m|
+          route_string += "#{m.point} "
+          print "#{points[m.point]} "
+        end
+        print "\n"
+        route_string.strip!
+        
+        print "Route: #{route_string}\n"
+  
+        unless route_string.empty?
+          existing_index = -1
+          
+          routes.each do |r|
+            existing_index = routes.index(r) if r.points_on_route == route_string
+          end
+          
+          # If the route is not present, create a new route
+          if existing_index == -1
+            routes.push Route.create(name: "Route #{route_string.gsub(" ", "")} in #{locale.name}",
+                                     points_on_route: route_string)
+            routes.last.sources.push(Source.create(link: l))
+          # Else add another source to the existing route  
+          else
+            routes[existing_index].sources.push(Source.create(link: l))
+          end   
+        end
+      rescue => e
+        puts "Error: #{e}"
       end
     end
     
