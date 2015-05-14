@@ -480,16 +480,24 @@ $(document).ready(function()
       var latitude = parseFloat($(wrapper).find("#locale-latitude").text());
       var longitude = parseFloat($(wrapper).find("#locale-longitude").text());
       
-      centerMap(latitude, longitude);
-      map.setZoom(10);
-      
-      // Set up header in info panel
-      $("#info-panel").empty();
-      var header = $("<h3></h3>").text(toTitleCase($("#locale").val()));
-      $("#info-panel").append(header);
-      
-      // Display search results
-      service.nearbySearch({bounds: map.getBounds()}, callback);    
+      // If latitude or longitude are invalid, display error message
+      if ((latitude == NaN) || (longitude == NaN))
+      {
+        alert("Could not find location " + $("#locale").val());
+      }
+      else
+      {
+        centerMap(latitude, longitude);
+        map.setZoom(10);
+        
+        // Set up header in info panel
+        $("#info-panel").empty();
+        var header = $("<h3></h3>").text(toTitleCase($("#locale").val()));
+        $("#info-panel").append(header);
+        
+        // Display search results
+        service.nearbySearch({bounds: map.getBounds()}, callback);
+      }
     }});
   });
     

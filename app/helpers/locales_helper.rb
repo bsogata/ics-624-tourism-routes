@@ -133,9 +133,10 @@ module LocalesHelper
   def get_coordinates(point_name)
     print "Scraping coordinates from http://www.bing.com/search?q=#{to_uri_format(point_name)}+coordinates\n"
     page = Nokogiri.HTML(open("http://www.bing.com/search?q=#{to_uri_format(point_name)}+coordinates"))
-    coordinates = []
+    coordinates = [0, 0]
     
-    page.css("ol#b_results > li.b_ans > ul.b_vList > li > div.b_focusTextMedium").each do |text|
+    page.css("ol#b_results div.b_focusTextMedium").each do |text|
+      print text
       coordinates = text.content.gsub(" ", "").split(",")
     end
     
