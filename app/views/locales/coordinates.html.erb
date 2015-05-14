@@ -1,5 +1,7 @@
 <% coordinates = get_coordinates(@locale_name) %>
 <div id="locale-latitude"><%= "#{(coordinates[0].end_with?("S")) ? ("-") : ("")}" +
-                              "#{coordinates[0].chop.chop}" %></div>
+                              "#{coordinates[0].chop.chop}" unless coordinates.nil? ||
+                                                                   coordinates[0].nil? %></div>
 <div id="locale-longitude"><%= "#{(coordinates[1].end_with?("W")) ? ("-") : ("")}" +
-                               "#{coordinates[1].chop.chop}" %></div>
+                               "#{coordinates[1].chop.chop}" unless coordinates.nil? ||
+                                                                    coordinates[1].nil? %></div>
