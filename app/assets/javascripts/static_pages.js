@@ -223,8 +223,7 @@ function setupRoutes()
   var locale = $("#locale").val();
   var markerNames = [];
   
-  // markers[0] appears to contain the region of the current locale and is ignored here
-  for (var i = 1; i < markers.length; i++)
+  for (var i = 0; i < markers.length; i++)
   {
     markerNames.push(markers[i].title.replace("&", "and"));
   }
@@ -285,7 +284,11 @@ function setupRoutes()
         
         for (var j = 0; j < points.split(" ").length; j++)
         {
-          markersOnRoute.push(markers[parseInt(points.split(" ")[j])].position);
+          var index = parseInt(points.split(" ")[j]);
+
+          if ((0 <= index) && (index < markers.length)) {
+            markersOnRoute.push(markers[index].position);
+          }
         }
         
         var route = new google.maps.Polyline({
@@ -366,7 +369,8 @@ function callback(results, status)
   markers.length = 0;
   routes.length = 0;
   
-  for (var k = 0; k < results.length; k++)
+  // Ignore the first result as it seems to contain the locality
+  for (var k = 1; k < results.length; k++)
   {
     createMarker(results[k]);
   }
