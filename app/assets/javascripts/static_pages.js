@@ -238,6 +238,17 @@ function setupRoutes()
     
     // Display the names of the points of interest
     $("#info-panel").append($(wrapper).find("#poi"));
+    
+    $(".poi").click(function()
+    {
+      for (var i = 0; i < markers.length; i++)
+      {
+        if (markers[i].title == $(this).text())
+        {
+          google.maps.event.trigger(markers[i], 'click');
+        }
+      }      
+    });
   }}).done(function()
   {
     // Show progress bar
@@ -481,29 +492,7 @@ $(document).ready(function()
       service.nearbySearch({bounds: map.getBounds()}, callback);    
     }});
   });
-  
-  // Zoom in on a route when its corresponding button is clicked on
-  $(".route-button").click(function()
-  {
-    // If current locale is -1, then no routes are visible and routesInLocale is empty
-    if (currentLocale != -1)
-    {
-      var id = parseInt($(this).attr("id").replace("route-", "").replace("-button", ""));
-      var route = routesInLocale[id - 1];
-      var markerBounds = new google.maps.LatLngBounds();
-      
-      // Add all markers in the route to the bounds to zoom to
-      for (var i = 0; i < routePoints[route].length; i++)
-      {
-        latitude = coordinates[routePoints[route][i]].split(" ")[0];
-        longitude = coordinates[routePoints[route][i]].split(" ")[1];
-        markerBounds.extend(new google.maps.LatLng(latitude, longitude));
-      }
-      
-      map.fitBounds(markerBounds);      
-    }
-  });
-  
+    
   // Click the Search button in response to an Enter keypress
   $("#locale").keypress(function(e)
   {
